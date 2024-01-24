@@ -32,10 +32,6 @@ GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://www.gnu.org
 <a href="https://www.buymeacoffee.com/dadosdelaplace" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
 
-<img width="700" alt="image" src="https://github.com/dadosdelaplace/docencia-R-datascience-2324/assets/26646492/a8ca9f4d-d29e-4601-af10-469c6c840623">
-
-Este repositorio contiene el **material docente** usados en el aula en la asignatura de **Software II** en el **Grado de Ciencia de Datos Aplicada** (Facultad de Estudios Estadísticos, Universidad Complutense de Madrid)
-
 * Diapositivas: <https://javieralvarezliebana.es/cursos-seminario-bioDS/diapos>
 
 * Código diapositivas: <https://github.com/dadosdelaplace/cursos-seminario-bioD>
