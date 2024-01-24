@@ -1,9 +1,9 @@
 <!--
-Material docente de Software II (curso académico: 2023-2024)
+Material para el seminario de bioDS (curso académico: 2023-2024)
 Javier Álvarez Liébana (@DadosDeLaplace)
 -->
 
-Material docente «Software II» (curso académico: 2023-2024)
+Material para el seminario de bioDS (curso académico: 2023-2024)
 ======
 
 [![License:
@@ -36,15 +36,11 @@ GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://www.gnu.org
 
 Este repositorio contiene el **material docente** usados en el aula en la asignatura de **Software II** en el **Grado de Ciencia de Datos Aplicada** (Facultad de Estudios Estadísticos, Universidad Complutense de Madrid)
 
-* Diapositivas: <https://javieralvarezliebana.es/docencia-R-datascience-2324/diapos>
+* Diapositivas: <https://javieralvarezliebana.es/cursos-seminario-bioDS/diapos>
 
-* Código diapositivas: <https://github.com/dadosdelaplace/docencia-R-datascience-2324>
+* Código diapositivas: <https://github.com/dadosdelaplace/cursos-seminario-bioD>
 
-* Documentación paquetes: <https://github.com/dadosdelaplace/docencia-R-datascience-2324/tree/main/fichas%20paquetes>
-
-* Entregas: <https://github.com/dadosdelaplace/docencia-R-datascience-2324/tree/main/entregas>
-
-* Scripts y material extra: <https://github.com/dadosdelaplace/docencia-R-datascience-2324/tree/main/material>
+* Documentación paquetes: <https://github.com/dadosdelaplace/dcursos-seminario-bioD/tree/main/fichas%20paquetes>
 
 Los códigos aquí subidos han sido principalmente realizados con los paquetes del entorno [`{tidyverse}`](https://www.tidyverse.org/packages/) y [`{tidymodels}`](https://www.tidymodels.org/), así como [`{rmarkdown}`](https://rmarkdown.rstudio.com/). Para presentaciones se ha usado como guía los recursos de Y. Xie et al. [R Markdown: The Definitive Guide](https://bookdown.org/yihui/rmarkdown/), A. Hill [Meet xaringan: making slides in R Markdown](https://arm.rbind.io/slides/xaringan.html#1), Y. Xie [Presentation Ninja with xaringan](https://slides.yihui.org/xaringan/#1) and G. Aden-Buie [Your Slides are So Extra! Extra-Special Presentations with xaringanExtra](https://slides.garrickadenbuie.com/extra-special-xaringan/?panelset1=enjoy2#1).
 
