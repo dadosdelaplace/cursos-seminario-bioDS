@@ -695,22 +695,6 @@ billboard |>
 
 :::
 
----
-
-## 🐣 Caso práctico {#caso-práctico-6}
-
-En el paquete `{tidyr}` contamos con el dataset `who` (dataset de la Organización Mundial de la Salud)
-
-```{r}
-#| eval: false
-library(tidyr)
-who
-```
-
-
-[**Convierte a tidydata**]{.hl-yellow} la base de datos realizando todas las opciones que consideres (consejo: usa papel y boli para bocetar como debería quedar la base de datos).
-
-
 
 # Operaciones con filas {#filas-tidyverse}
 
@@ -1888,44 +1872,6 @@ starwars |>
 :::
 
 
---- 
-
-## 🐣 Caso práctico {#caso-práctico-10}
-
-Vamos a usar el dataset `biopsy` que podemos encontrar en el agregador de datasets <https://vincentarelbundock.github.io/Rdatasets/index.html>. El [**dataset contiene datos de 699 pacientes a lo que se les realizó una biopsia de pecho**]{.hl-yellow}, obteniendo 11 variables (una que hace de id y 10 escalas medidas de 1 a 10)
-
-Puedes ver la documentación en <https://vincentarelbundock.github.io/Rdatasets/doc/MASS/biopsy.html>
-
-. . .
-
-1. [**Importa el `.csv` desde la propia web**]{.hl-yellow} (a través del enlace del archivo)
-
-. . .
-
-2. Habrás visto que hay 12 columnas en realidad importadas (la primera nos sobra ya que es solo un contador de filas). Vuelve a cargarlo [**seleccionando en la carga**]{.hl-yellow} solo desde `ID` hasta `class`
-
-. . .
-
-3. La variable `ID` en realidad es un identificador (una cualitativa). Repite la carga [**especificando los tipos de datos**]{.hl-yellow}: cualitativa o factor para ID y class, números para el resto de variables)
-
-
----
-
-## 🐣 Caso práctico {#caso-práctico-10}
-
-4. La variable `ID` debería ser identificador de cada registro: [**elimina duplicados**]{.hl-yellow} por dicha variable del dataset anterior.
-
-. . .
-
-5. Del dataset anterior [**filtra**]{.hl-yellow} solo los pacientes con tumor maligno y la variable `V9` con valor 4 o inferior, [**eliminando además cualquier registro que contenga ausente**]{.hl-yellow} en cualquiera de la variables.
-
-. . .
-
-7. Del dataset anterior obtén una [**muestra del 20% de los datos**]{.hl-yellow} (cada registro puede ser elegido con la misma probabilidad), y [**órdenalos**]{.hl-yellow} por de mayor a menor por la variable `V1` y, en caso de empate, de menor a mayor por la variable `V2`
-
----
-
-
 
 ## Selección columnas: select()
 
@@ -2277,14 +2223,6 @@ starwars |> pull(name)
 
 
 :::
-
----
-
-## 🐣 Caso práctico {#caso-práctico-10b}
-
-Del conjunto de datos original de starwars, con [**solo los personajes cuya altura es conocida**]{.hl-yellow}, [**extrae en un vector dicha variable**]{.hl-purple}.
-
-Tras dicha extracción, usa el vector para realizar un [**muestreo estratificado (por sexo) del 50% de los datos**]{.hl-yellow}, de manera que (para cada sexo) la [**probabilidad de cada personaje**]{.hl-yellow} de ser elegido sea [**inversamente proporcional a su altura**]{.hl-yellow} (más bajitos, más opciones)
 
 ---
 
@@ -3470,6 +3408,51 @@ El archivo de estilos debe estar en la misma carpeta que el archivo `.qmd`
 :::
 ::::
 
+---
+
+## Generar diapositivas
+
+
+El proceso es equivalente con tres cambios:
+
+* [**Quarto presentation**]{.hl-yellow}: ahora en `File > New File` hay que hacer click en `Quarto Presentation`. La cabecera ahora será ahora parecido a esto (entre otras personalizaciones posibles)
+
+```{r}
+#| eval: false
+title: "Tidyverse y Quarto"
+subtitle: "Seminario de tidyverse y Quarto para docencia e investigación"
+author: "Seminarios BioDS • curso 2023-2024"
+affiliation: Facultad de Estudios Estadísticos (UCM)
+lang: es
+format: 
+  revealjs:
+```
+
+---
+
+## Generar diapositivas
+
+
+El proceso es equivalente con tres cambios:
+
+* [**Separado de diapositivas**]{.hl-yellow}: para indicarle el cambio de diapositiva basta con escribir `. . .` (tres puntos separados por espacios y un salto de línea)
+
+. . .
+
+* [**Formato multicolumna**]{.hl-yellow}: el formato diapositivas permite el modo multicolumna (importante los espacios y no espacios del código ya que no es `R` sino revealjs)
+
+
+```{r}
+#| eval: false
+:::: columns
+::: {.column width="40%"}
+  algo en la primera columna (más estrecha)
+:::
+::: {.column width="60%"}
+  algo en la segunda columna (más ancha)
+:::
+::::
+```
 
 # Importar y exportar {#importar}
 
