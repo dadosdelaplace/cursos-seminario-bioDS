@@ -1,0 +1,5803 @@
+---
+title: "Tidyverse y Quarto"
+subtitle: "Seminario de tidyverse y Quarto para docencia e investigación"
+title-slide-attributes:
+  data-background-image: img/data-science-2.jpeg
+  data-background-size: cover
+  data-background-opacity: "0.2"
+author: "Seminarios BioDS • curso 2023-2024"
+affiliation: Facultad de Estudios Estadísticos (UCM)
+lang: es
+language: custom_lang.yml
+format: 
+  revealjs:
+    theme: [default, style.scss]
+    chalkboard: true
+    multiplex: true
+    menu:
+      side: left
+      width: normal
+    footer: "[<strong>Javier Álvarez Liébana</strong>](...) • Seminarios BioDS (UCM) • curso 2023-2024"
+    slide-number: c/t
+execute:
+  echo: true
+---
+
+# ¡Bienvenidos a tidyverse!
+
+[**Dejad vuestros bucles a un lado**]{style="color:#444442;"}
+
+---
+
+
+## Objetivos
+
+::: columns
+::: {.column width="37%"}
+![](https://assets-global.website-files.com/6092cb6b4ac959f39728dd26/6188a97fa499b5fbfe410417_target%20(1).png)
+:::
+
+::: {.column width="63%"}
+::: incremental
+-   Entender los [**conceptos básicos de tidyverse**]{.hl-yellow} desde cero → aprender programar funcional (sin bucles)
+
+-   Utilidad de tidyverse → flujos de trabajo [**reproducibles**, **legibles**, **transparentes**]{.hl-yellow} y mantenibles
+
+-   Introducción a [**Quarto**]{.hl-yellow} → elaboración de material docente
+
+-   Introducción a Github en RStudio
+:::
+:::
+:::
+
+---
+
+## Materiales
+
+* [**Diapositivas**]{.hl-yellow}: las diapositivas que usaremos disponibles y actualizadas en **<https://javieralvarezliebana.es/seminario-R-biods/diapos>** 
+
+En el menú de las diapositivas (abajo a la izquierda) tienes una [**opción para descargarlas en pdf**]{.hl-yellow} en `Tools` (consejo: no lo hagas hasta el final del curso ya que irán modificándose)
+  
+&nbsp;
+
+
+* [**Resúmenes de paquetes**]{.hl-yellow}: [**chuletas de los paquetes**](https://github.com/dadosdelaplace/seminario-R-biods/tree/main/fichas%20paquetes) en formato .pdf
+
+
+---
+
+## Sé organizado: proyectos
+
+De la misma manera que en el ordenador solemos trabajar de manera [**ordenada por carpetas**]{.hl-yellow}, en `RStudio` podemos hacer lo mismo para trabajar de [**manera eficaz creando proyectos**]{.hl-yellow}.
+
+. . .
+
+::: columns
+::: {.column width="60%"}
+Un [**proyecto será una «carpeta»**]{.hl-yellow} dentro de `RStudio`, de manera que nuestro directorio raíz automáticamente será la propia carpeta de proyecto (pudiendo pasar de un proyecto a otro con el menu superior derecho).
+
+Podemos crear uno en una carpeta nueva o en una carpeta ya existente.
+:::
+
+::: {.column width="40%"}
+![](img/rstudio_proyectos.png){width="370"}
+:::
+:::
+
+
+# Intentos de bases de datos {#bloque-I}
+
+[**Matrices y data.frames**]{style="color:#444442;"}
+
+
+---
+
+## Primera intento: matrices
+
+Cuando analizamos datos solemos tener [**varias variables**]{.hl-yellow} de cada individuo: necesitamos una «tabla» que las recopile. La opción más inmediata son las [**matrices**]{.hl-yellow}: concatenación de variables del [**mismo tipo e igual longitud**]{.hl-purple}.
+
+. . .
+
+```{r}
+estaturas <- c(150, 160, 170, 180)
+pesos <- c(63, 70, 85, 95)
+datos_matriz <- cbind(estaturas, pesos)
+datos_matriz
+```
+
+---
+
+
+## Primer intento: matrices
+
+También podemos [**realizar operaciones por columnas/filas**]{.hl-yellow} sin recurrir a bucles con la función `apply()`, y le indicaremos como **argumentos**
+
+- la matriz
+- el sentido de la operación (MARGIN = 1 por filas, MARGIN = 2 por columnas)
+- la función a aplicar
+
+. . .
+
+```{r}
+# Media (mean) por columnas (MARGIN = 2)
+apply(datos_matriz, MARGIN = 2, FUN = "mean")
+```
+
+
+```{r}
+# (Cuasi)varianza (var) por columnas (MARGIN = 2)
+apply(datos_matriz, MARGIN = 2, FUN = "var")
+```
+
+---
+
+## Segundo intento: data.frame
+
+Para poder trabajar con [**variables de distinto tipo**]{.hl-yellow} tenemos lo que se conoce como [**data.frame**]{.hl-yellow}: concatenación de variables de igual longitud pero pueden ser de [**tipo distinto**]{.hl-purple}.
+
+Dado que un `data.frame` es ya una «base de datos» las variables no son meros vectores matemáticos: [**tienen un significado**]{.hl-yellow} y podemos (debemos) [**ponerles nombres**]{.hl-purple}
+
+```{r}
+library(lubridate)
+tabla <- data.frame("edad" = 25:27, "estado" = c(TRUE, NA, FALSE),
+                    "nombre" = c("javi", "sandra", "carlos"),
+                    "f_nacimiento" = as_date(c("1989-09-10", "1996-06-12", "1980-11-27")))
+tabla
+```
+
+---
+
+## Segundo intento: data.frame
+
+Si queremos acceder a sus elementos, podemos como en las matrices (aunque no es recomendable): ahora [**tenemos dos índices**]{.hl-yellow} (filas y columnas, dejando libre la que no usemos)
+
+```{r}
+tabla[2, ]  # segunda fila (todas sus variables)
+tabla[, 3]  # tercera columna (de todos los individuos)
+tabla[2, 1]  # primera característica de la segunda persona
+```
+
+. . .
+
+::: columns
+::: {.column width="25%"}
+![](img/menu_data_frame.jpg)
+:::
+
+::: {.column width="75%"}
+También tiene ventajas de una [**«base» de datos**]{.hl-yellow} : podemos [**aceder a las variables por su nombre**]{.hl-purple} (**recomendable** ya que las variables pueden cambiar de posición), poniendo el nombre de la tabla seguido del símbolo `$` (con el **tabulador**, nos aparecerá un menú de columnas a elegir)
+:::
+:::
+
+---
+
+## Intento final: tibble
+
+Las tablas en formato `data.frame` tienen algunas [**limitaciones**]{.hl-red}
+
+La principal es que [**no permite la definición "al vuelo"**]{.hl-red}: imagina que definimos una base de datos con estaturas y pesos, y queremos una tercera variable con el IMC
+
+```{r}
+#| error: true
+data.frame("estatura" = c(1.7, 1.8, 1.6), "peso" = c(80, 75, 70),
+           "IMC" = peso / (estatura^2))
+```
+
+. . .
+
+
+De ahora en adelante usaremos el formato `tibble` (un [**data.frame mejorado**]{.hl-yellow})
+
+```{r}
+library(tibble)
+tibble("estatura" = c(1.7, 1.8, 1.6), "peso" = c(80, 75, 70),
+       "IMC" = peso / (estatura^2))
+```
+
+---
+
+## Intento final: tibble
+
+```{r}
+tabla <- tibble("estatura" = c(1.7, 1.8, 1.6), "peso" = c(80, 75, 70),
+                "IMC" = peso / (estatura^2))
+tabla
+```
+
+Las tablas en formato `tibble` nos permitirá una [**gestión más ágil, eficiente y coherente**]{.hl-yellow} de los datos, con 4 ventajas principales:
+
+. . .
+
+-   [**Metainformación**]{.hl-yellow}: si te fijas en la cabecera, nos dice ya automáticamente el número de filas y columnas, y el tipo de cada variable
+
+. . .
+
+-   [**Recursividad**]{.hl-yellow}: permite definir las variables secuencialmente (como hemos visto)
+
+---
+
+## Intento final: tibble
+
+-   [**Consistencia**]{.hl-yellow}: si accedes a una columna que no existe avisa con un warning
+
+```{r}
+#| warning: true
+tabla$invent
+```
+
+. . .
+
+-   [**Por filas**]{.hl-yellow}: crear por filas (copiar y pegar de una tabla) con `tribble()`
+
+```{r}
+tribble(~colA, ~colB,
+        "a",   1,
+        "b",   2)
+```
+
+. . .
+
+::: callout-tip
+El paquete `{datapasta}` nos permite [**copiar y pegar**]{.hl-green} tablas de páginas web y documentos sencillos
+:::
+
+
+
+# Base de tidyverse: tidydata {#bloque-II}
+
+[**Nuestra base de datos: tibble. Tidydata: un multiverso de datos limpios**]{style="color:#444442;"}
+
+---
+
+
+## R base vs Tidyverse
+
+Si conoces algún otro lenguaje de programación (o tienes gente cercana que programa) te extrañará que no vayamos a usar conceptos habituales como
+
+-   [**Bucles for**]{.hl-yellow}: repetir un código un número fijo de iteraciones.
+
+-   [**Bucles while**]{.hl-yellow}: repetir un código hasta que se cumpla una condición
+
+-   [**Estructuras if-else**]{.hl-yellow}: estructuras de control para decidir por donde camina el código en función del valor de las variables.
+
+. . .
+
+Y es que con tidyverse, en la [**mayoría de ocasiones vamos a poder evitarlas**]{.hl-red} (en especial los bucles)
+
+---
+
+## ¿Qué es tidyverse?
+
+::: columns
+::: {.column width="50%"}
+![](img/tidyverrse_universe.jpg)
+:::
+
+::: {.column width="50%"}
+![](img/flow_tidyverse.jpg)
+:::
+:::
+
+`{tidyverse}` es un [**«universo» de paquetes**]{.hl-yellow} para garanatizar un flujo de trabajo (de inicio a fin) eficiente, coherente y lexicográficamente sencillo de entender, basado en la idea de que [**nuestros datos están limpios y ordenados (tidy)**]{.hl-purple}
+
+---
+
+## ¿Qué es tidyverse?
+
+::: columns
+::: {.column width="45%"}
+![](img/tidyverrse_universe.jpg)
+:::
+
+::: {.column width="55%"}
+-   `{tibble}`: optimizando data.frame
+-   `{tidyr}`: limpieza de datos
+-   `{readr}`: carga datos rectangulares (.csv)
+-   `{dplyr}`: gramática para depurar
+-   `{stringr}`: manejo de textos
+-   `{ggplot2}`: visualización de datos
+-   `{tidymodels}`: modelización/predicción
+:::
+:::
+
+También tenemos los paquetes `{purrr}` para el manejo de listas, `{forcast}` para cualitativas, `{lubridate}` para fechas, `{readxl}` para importar archivos .xls y .xlsx, `{rvest}` para web scraping y `{rmarkdown}` para comunicar resultados.
+
+---
+
+## ¿Qué es tidyverse?
+
+::: columns
+::: {.column width="45%"}
+![](img/tidyverrse_universe.jpg)
+:::
+
+::: {.column width="55%"}
+-   `{tibble}`: [**optimizando data.frame**]{.hl-yellow}
+-   `{tidyr}`: [**limpieza de datos**]{.hl-yellow}
+-   `{readr}`: carga datos rectangulares (.csv)
+-   `{dplyr}`: gramática para depurar
+-   `{stringr}`: manejo de textos
+-   `{ggplot2}`: visualización de datos
+-   `{tidymodels}`: modelización/predicción
+:::
+:::
+
+También tenemos los paquetes `{purrr}` para el manejo de listas, `{forcast}` para cualitativas, `{lubridate}` para fechas, `{readxl}` para importar archivos .xls y .xlsx, `{rvest}` para web scraping y `{rmarkdown}` para comunicar resultados.
+
+---
+
+## Filosofía base: tidy data
+
+> Tidy datasets are all alike, but every messy dataset is messy in its own way (Hadley Wickham, Chief Scientist en RStudio)
+
+::: {style="font-size:120px; text-align: center; color:#F8DF58;"}
+<b>TIDY</b><b>[VERSE</b>]{style="color:#CAB0EE;"}
+:::
+
+El [**universo**]{.hl-purple} de paquetes `{tidyverse}` se basa en la idea introducido por **Hadley Wickham** (el Dios al que rezo) de [**estandarizar**]{.hl-yellow} el formato los datos para
+
+::: incremental
+-   [**sistematizar**]{.hl-green} la depuración
+-   hacer más [**sencillo**]{.hl-green} su manipulación.
+-   código [**legible**]{.hl-green}
+:::
+
+---
+
+## Reglas del tidy data
+
+Lo primero por tanto será entender qué son los [**conjuntos tidydata**]{.hl-yellow} ya que todo `{tidyverse}` se basa en que los datos están estandarizados.
+
+::: columns
+::: {.column width="50%"}
+::: {.fragment .fade-in}
+1.  Cada [**variable**]{.hl-yellow} en una [**única columna**]{.hl-purple}
+:::
+
+::: {.fragment .fade-in}
+2.  Cada [**individuo**]{.hl-yellow} en una [**fila diferente**]{.hl-purple}
+:::
+
+::: {.fragment .fade-in}
+3.  Cada [**celda**]{.hl-yellow} con un [**único valor**]{.hl-purple}
+:::
+
+::: {.fragment .fade-in}
+4.  Cada [**dataset**]{.hl-yellow} en un [**tibble**]{.hl-purple}
+:::
+
+::: {.fragment .fade-in}
+5.  Si queremos cruzar [**múltiples tablas**]{.hl-yellow} debemos tener una [**columna común**]{.hl-purple}
+:::
+:::
+
+::: {.column width="50%"}
+![](img/tidy_def.jpg){width="160%"}
+:::
+:::
+
+---
+
+## Tubería (pipe)
+
+En `{tidyverse}` será clave el [**operador pipe (tubería)**]{.hl-yellow} definido como `|>` ([**ctrl+shift+M**]{.hl-purple}): será una [**tubería que recorre los datos**]{.hl-yellow} y los transforma.
+
+. . .
+
+::: columns
+::: {.column width="50%"}
+En R base, si queremos aplicar tres funciones `first()`, `second()` y `third()` en orden, sería
+
+```{r}
+#| eval: false
+third(second(first(datos)))
+```
+:::
+
+::: {.column width="50%"}
+En `{tidyverse}` podremos [**leer de izquierda a derecha**]{.hl-yellow} y separar los datos de las acciones
+
+```{r}
+#| eval: false
+datos |> first() |> second() |> third()
+```
+:::
+:::
+
+ 
+
+. . .
+
+::: callout-caution
+## Apunte importante
+
+Desde la versión 4.1.0 de `R` disponemos de `|>`, un pipe **nativo** disponible [**fuera de tidyverse**]{.hl-purple}, sustituyendo al [**antiguo pipe**]{.hl-red} `%>%` que dependía del paquete `{magrittr}` (bastante problemático).
+:::
+
+---
+
+## Tubería (pipe)
+
+La principal ventaja es que el [**código sea muy legible (casi literal)**]{.hl-yellow} pudiendo hacer grandes operaciones con los datos con apenas código.
+
+ 
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  limpio(...) |>
+  filtro(...) |>
+  selecciono(...) |>
+  ordeno(...) |>
+  modifico(...) |>
+  renombro(...) |>
+  agrupo(...) |>
+  cuento(...) |>
+  resumo(...) |>
+  pinto(...)
+```
+:::
+
+::: {.column width="50%"}
+<center><img src="img/logo_pipe.png" width="360px"/></center>
+:::
+:::
+
+---
+
+## Datos SUCIOS: messy data
+
+¿Pero qué aspecto tienen los [**datos no tidy**]{.hl-yellow}? Vamos a cargar la tabla `table4a` del paquete `{tidyr}` (ya lo tenemos cargado del entorno tidyverse).
+
+ 
+
+```{r}
+library(tidyr)
+table4a
+```
+
+ 
+
+[**¿Qué puede estar fallando?**]{.hl-red}
+
+---
+
+## Pivotar: pivot_longer()
+
+::: columns
+::: {.column width="40%"}
+```{r}
+table4a
+```
+:::
+
+::: {.column width="60%"}
+❎ Cada [**fila representa dos observaciones**]{.hl-red} (1999 y 2000) → las columnas `1999` y `2000` en realidad deberían ser en sí [**valores de una variable**]{.hl-yellow} y no nombres de columnas.
+:::
+:::
+
+. . .
+
+Incluiremos una [**nueva columna**]{.hl-yellow} que nos guarde el año y otra que guarde el valor de la variable de interés en cada uno de esos años. Y lo haremos con la función `pivot_longer()`: [**pivotaremos la tabla**]{.hl-yellow} a formato long:
+
+```{r}
+table4a |> 
+  pivot_longer(cols = c("1999", "2000"), names_to = "year", values_to = "cases")
+```
+
+---
+
+## Pivotar: pivot_longer()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+table4a |> 
+  pivot_longer(cols = c("1999", "2000"),
+               names_to = "year",
+               values_to = "cases")
+```
+:::
+
+::: {.column width="50%"}
+![](img/table4a.jpg)
+:::
+:::
+
+ 
+
+-   `cols`: [**nombre de las variables a pivotar**]{.hl-yellow}
+-   `names_to`: nombre de la nueva variable a la quemandamos la [**cabecera**]{.hl-yellow} de la tabla (los nombres).
+-   `values_to`: nombre de la nueva variable a la que vamos a mandar los [**datos**]{.hl-yellow}.
+
+---
+
+## Datos SUCIOS: messy data
+
+Veamos otro ejemplo con la tabla `table2`
+
+ 
+
+```{r}
+table2
+```
+
+ 
+
+[**¿Qué puede estar fallando?**]{.hl-red}
+
+---
+
+## Pivotar: pivot_wider()
+
+::: columns
+::: {.column width="60%"}
+```{r}
+#| echo: false
+table2
+```
+:::
+
+::: {.column width="40%"}
+❎ Cada [**observación está dividido en dos filas**]{.hl-red} → los [**registros con el mismo año deberían ser el mismo**]{.hl-yellow}
+:::
+:::
+
+. . .
+
+Lo que haremos será lo opuesto: con `pivot_wider()` [**ensancharemos la tabla**]{.hl-yellow}
+
+```{r}
+table2 |>  pivot_wider(names_from = type, values_from = count)
+```
+
+---
+
+## Datos SUCIOS: messy data
+
+Veamos otro ejemplo con la tabla `table3`
+
+
+```{r}
+table3
+```
+
+
+[**¿Qué puede estar fallando?**]{.hl-red}
+
+---
+
+## Separar: separate()
+
+::: columns
+::: {.column width="60%"}
+```{r}
+table3
+```
+:::
+
+::: {.column width="40%"}
+❎ Cada [**celda contiene varios valores**]{.hl-red}
+:::
+:::
+
+. . .
+
+Lo que haremos será hacer uso de la función `separate()` para mandar [**separar cada valor**]{.hl-yellow} a una columna diferente.
+
+```{r}
+table3 |> separate(rate, into = c("cases", "pop"))
+```
+
+---
+
+## Separar: separate()
+
+```{r}
+table3 |> separate(rate, into = c("cases", "pop"))
+```
+
+Fíjate que los datos, aunque los ha separado, [**los ha mantenido como texto**]{.hl-red} cuando en realidad deberían ser variables numéricas. Para ello podemos añadir el argumento opcional `convert = TRUE`
+
+. . .
+
+```{r}
+table3 |> separate(rate, into = c("cases", "pop"), convert = TRUE)
+```
+
+---
+
+## Datos SUCIOS: messy data
+
+Veamos el último ejemplo con la tabla `table5`
+
+
+```{r}
+table5
+```
+
+
+[**¿Qué puede estar fallando?**]{.hl-red}
+
+---
+
+## Unir unite()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+table5
+```
+:::
+
+::: {.column width="50%"}
+❎ Tenemos [**mismos valores divididos en dos columnas**]{.hl-red}
+:::
+:::
+
+. . .
+
+Usaremos `unite()` para [**unir los valores**]{.hl-yellow} de siglo y año en una misma columna
+
+```{r}
+table5 |> unite(col = year_completo, century, year, sep = "")
+```
+
+---
+
+## 💻 Tu turno {#tu-turno-6}
+
+[**Intenta realizar los siguientes ejercicios sin mirar las soluciones**]{style="color:#444442;"}
+
+::: panel-tabset
+
+### [**Ejercicio 1**]{.hl-yellow}
+
+📝 Echa un vistazo a la tabla `table4b` del paquete `{tidyr}`. ¿Es tidydata? En caso negativo, ¿qué falla? ¿Cómo convertirla a tidy data en caso de que no lo sea ya?
+
+```{r}
+#| code-fold: true
+#| eval: false
+table4b |>
+  pivot_longer(cols = "1999":"2000", names_to = "year",
+               values_to = "cases")
+```
+
+### [**Ejercicio 2**]{.hl-yellow}
+
+📝 Echa un vistazo a la tabla `relig_income` del paquete `{tidyr}`. ¿Es tidydata? En caso negativo, ¿qué falla? ¿Cómo convertirla a tidy data en caso de que no lo sea ya?
+
+```{r}
+#| code-fold: true
+#| eval: false
+relig_income |>
+  pivot_longer(cols = "<$10k":"Don't know/refused",
+               names_to = "income",
+               values_to = "people")
+```
+
+### [**Ejercicio 3**]{.hl-yellow}
+
+📝 Echa un vistazo a la tabla `billboard` del paquete `{tidyr}`. ¿Es tidydata? En caso negativo, ¿qué falla? ¿Cómo convertirla a tidy data en caso de que no lo sea ya?
+
+```{r}
+#| code-fold: true
+#| eval: false
+billboard |>
+  pivot_longer(cols = "wk1":"wk76",
+               names_to = "week",
+               names_prefix = "wk",
+               values_to = "position",
+               values_drop_na = TRUE)
+```
+
+:::
+
+---
+
+## 🐣 Caso práctico {#caso-práctico-6}
+
+En el paquete `{tidyr}` contamos con el dataset `who` (dataset de la Organización Mundial de la Salud)
+
+```{r}
+#| eval: false
+library(tidyr)
+who
+```
+
+
+[**Convierte a tidydata**]{.hl-yellow} la base de datos realizando todas las opciones que consideres (consejo: usa papel y boli para bocetar como debería quedar la base de datos).
+
+
+
+# Operaciones con filas {#filas-tidyverse}
+
+[**Operaciones con filas en tidyverse**]{style="color:#444442;"}
+
+---
+
+
+## ¿Qué es tidyverse?
+
+::: columns
+::: {.column width="45%"}
+![](img/tidyverrse_universe.jpg)
+:::
+
+::: {.column width="55%"}
+-   `{tibble}`: [**optimizando data.frame**]{.hl-yellow}
+-   `{tidyr}`: limpieza de datos
+-   `{readr}`: carga datos rectangulares (.csv)
+-   `{dplyr}`: [**gramática para depurar**]{.hl-yellow}
+-   `{stringr}`: manejo de textos
+-   `{ggplot2}`: visualización de datos
+-   `{tidymodels}`: modelización/predicción
+:::
+:::
+
+También tenemos los paquetes `{purrr}` para el manejo de listas, `{forcast}` para cualitativas, `{lubridate}` para fechas, `{readxl}` para importar archivos .xls y .xlsx, `{rvest}` para web scraping y `{rmarkdown}` para comunicar resultados.
+
+
+---
+
+## Preprocesamiento: dplyr
+
+Dentro de `{tidyverse}` usaremos el paquete `{dplyr}` para el [**preprocesamiento y depuración**]{.hl-yellow} de datos de datos.
+
+::: columns
+::: {.column width="60%"}
+![](img/dplyr.png){width=450}
+:::
+
+::: {.column width="40%"}
+```{r}
+#| eval: false
+datos |>
+  limpio(...) |>
+  filtro(...) |>
+  selecciono(...) |>
+  ordeno(...) |>
+  modifico(...) |>
+  renombro(...) |>
+  agrupo(...) |>
+  cuento(...) |>
+  resumo(...) |>
+  pinto(...)
+```
+:::
+:::
+
+La idea es que el [**código sea legible**]{.hl-yellow}, como si fuese una lista de instrucciones que al leerla nos diga de manera muy evidente lo que está haciendo.
+
+---
+
+## Hipótesis: tidydata
+
+::: columns
+::: {.column width="50%"}
+Toda la depuración que vamos a realizar es sobre la [**hipótesis de que nuestros datos están en tidydata**]{.hl-yellow}
+:::
+
+::: {.column width="50%"}
+![](img/tidy_def.jpg){width="160%"}
+:::
+::::
+
+Recuerda que en `{tidyverse}` será clave el [**operador pipe (tubería)**]{.hl-yellow} definido como `|>` ([**ctrl+shift+M**]{.hl-purple}): será una [**tubería que recorre los datos**]{.hl-yellow} y los transforma.
+
+. . .
+
+Vamos a practicar con el dataset `starwars` del paquete cargado `{dplyr}`
+
+```{r}
+#| eval: false
+library(tidyverse)
+starwars
+```
+
+---
+
+## Filtrar filas: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  filtro(condicion)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condicion)
+```
+:::
+:::
+
+El más simple es cuando [**filtramos registros**]{.hl-yellow} en base a alguna condición lógica: con `filter()` se seleccionarán solo individuos que cumplan ciertas condiciones (muestreo no aleatorio por condiciones)
+
+
+::: incremental
+-   `==`, `!=`: [**igual**]{.hl-purple} o [**distinto**]{.hl-yellow} que (`|> filter(variable == "a")`)
+-   `>`, `<`: [**mayor**]{.hl-purple} o [**menor**]{.hl-yellow} que (`|> filter(variable < 3)`)
+-   `>=`, `<=`: [**mayor o igual**]{.hl-yellow} o [**menor o igual**]{.hl-purple} que (`|> filter(variable >= 5)`)
+-   `%in%`: valores [**pertenencen**]{.hl-yellow} a un listado de opciones (`|> filter(variable %in% c("azul", "verde"))`)
+-   `between(variable, val1, val2)`: si los valores (continuos) [**caen dentro de un rango**]{.hl-yellow} de valores (`|> filter(between(variable, 160, 180))`)
+:::
+
+---
+
+## Filtrar filas: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  filtro(condicion)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condicion)
+```
+:::
+:::
+
+¿Cómo harías para... [**filtrar**]{.hl-yellow} los personajes de [**ojos marrones**]{.hl-purple}?
+
+. . .
+
+[**¿Qué tipo de variable es?**]{.hl-yellow} --> La variable `eye_color` es cualitativa así que está representada por textos
+
+. . .
+
+```{r}
+#| echo: false
+#| include: false
+library(tidyverse)
+```
+
+```{r}
+starwars |>
+  filter(eye_color == "brown")
+```
+
+---
+
+## Filtrar filas: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  filtro(condicion)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condicion)
+```
+:::
+:::
+
+¿Cómo harías para... [**filtrar**]{.hl-yellow} los personajes que [**no tienen ojos marrones**]{.hl-purple}?
+
+. . .
+
+
+```{r}
+starwars |>
+  filter(eye_color != "brown")
+```
+
+---
+
+## Filtrar filas: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  filtro(condicion)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condicion)
+```
+:::
+:::
+
+¿Cómo harías para ... [**filtrar**]{.hl-yellow} los personajes que [**tengan los ojos marrones o azules**]{.hl-purple}?
+
+. . .
+
+```{r}
+starwars |>
+  filter(eye_color %in% c("blue", "brown"))
+```
+
+---
+
+## Filtrar filas: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  filtro(condicion)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condicion)
+```
+:::
+:::
+
+Fíjate que `%in%` es equivalente a concatenar varios `==` con una conjunción o (`|`)
+
+```{r}
+starwars |>
+  filter(eye_color == "blue" | eye_color == "brown")
+```
+
+---
+
+## Filtrar filas: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  filtro(condicion)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condicion)
+```
+:::
+:::
+
+¿Cómo harías para ... [**filtrar**]{.hl-yellow} los personajes que [**midan entre 120 y 160 cm**]{.hl-purple}?
+
+. . .
+
+[**¿Qué tipo de variable es?**]{.hl-yellow} --> La variable `height` es cuantitativa continua así que deberemos filtrar por rangos de valores (intervalos) --> usaremos `between()`
+
+. . .
+
+```{r}
+starwars |>
+  filter(between(height, 120, 160))
+```
+
+
+---
+
+## Filtrar filas: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  filtro(condicion)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condicion)
+```
+:::
+:::
+
+¿Cómo harías... [**filtrar**]{.hl-yellow} los personajes que [**tengan ojos y no sean humanos**]{.hl-purple}?
+
+. . .
+
+```{r}
+starwars |>
+  filter(eye_color == "brown" & species != "Human")
+```
+
+
+---
+
+## Eliminar ausentes: drop_na()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  retirar_ausentes(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  drop_na(var1, var2, ...)
+```
+:::
+:::
+
+Hay un filtro especial para una de las operaciones más habituales en depuración: [**retirar los ausentes**]{.hl-yellow}. Para ello podemos usar dentro de un filtro `is.na()`, que nos devuelve `TRUE/FALSE` en función de si es ausente, o bien ...
+
+. . .
+
+Usar `drop_na()`: si no indicamos variable, elimina registros con ausente en cualquier variable. Más adelante veremos como [**imputar esos ausentes**]{.hl-yellow} 
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  drop_na(mass, height)
+```
+
+```{r}
+#| echo: false
+starwars |>
+  drop_na(mass, height, sex) |> 
+  select(name, mass, height, hair_color) |> 
+  slice(1:7)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  drop_na()
+```
+
+```{r}
+#| echo: false
+starwars |>
+  drop_na() |> 
+  select(name, mass, height, hair_color) |> 
+  slice(1:7)
+```
+:::
+:::
+
+---
+
+## 💻 Tu turno {#tu-turno-9a}
+
+[**Intenta realizar los siguientes ejercicios sin mirar las soluciones**]{style="color:#444442;"}
+
+::: panel-tabset
+
+### [**Ejercicio 1**]{.hl-yellow}
+
+📝 Selecciona del conjunto de starwars solo los personajes que sean androides o cuyo valor en `species` sea desconocido
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  filter(species == "Droid" | is.na(species))
+```
+
+### [**Ejercicio 2**]{.hl-yellow}
+
+📝 Selecciona del conjunto de starwars solo los personajes cuyo peso esté entre 65 y 90 kg.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> filter(between(mass, 65, 90))
+```
+
+### [**Ejercicio 3**]{.hl-yellow}
+
+📝 Tras limpiar de ausentes en todas las variables, selecciona del conjunto de starwars solo los personajes que sean humanos y que vengan de Tatooine
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  drop_na() |> 
+  filter(species == "Human" & homeworld == "Tatooine")
+```
+
+### [**Ejercicio 4**]{.hl-yellow}
+
+📝 Selecciona del conjunto original de starwars los personajes no humanos, `male` en el sexo y que midan entre 120 y 170 cm, o los personajes con ojos marrones o rojos.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  filter((species != "Human" & sex == "male" &
+            between(height, 120, 170)) |
+           eye_color %in% c("brown", "red"))
+```
+
+### [**Ejercicio 5**]{.hl-yellow}
+
+📝 Busca información en la ayuda de la función `str_detect()` del paquete `{stringr}` (cargado en `{tidyverse}`). Consejo: prueba antes las funciones que vayas a usar con algún vector de prueba para poder comprobar su funcionamiento. Tras saber lo que hace, filtra solo aquellos personajes con apellido `Skywalker`
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> filter(str_detect(name, "Skywalker"))
+```
+:::
+
+---
+
+## Rebanadas de datos: slice()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> rebanadas(posiciones)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> slice(posiciones)
+```
+:::
+:::
+
+A veces nos puede interesar realizar un [**muestreo no aleatorio discreccional**]{.hl-yellow}, o lo que es lo mismo, [**filtrar por posición**]{.hl-yellow}: con `slice(posiciones)` podremos seleccionar filas concretas pasando como argumento un [**vector de índices**]{.hl-yellow}
+
+. . .
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+
+# fila 1
+starwars |>
+  slice(1)
+```
+
+```{r}
+#| echo: false
+starwars |> slice(1) |> select(name:hair_color)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+
+# filas de la 7 a la 9
+starwars |>
+  slice(7:9)
+```
+
+```{r}
+#| echo: false
+starwars |> slice(7:9) |> select(name:hair_color)
+```
+:::
+:::
+
+. . .
+
+```{r}
+#| eval: false
+
+# filas 2, 7, 10 y 31
+starwars |>
+  slice(c(2, 7, 10, 31))
+```
+
+```{r}
+#| echo: false
+starwars |>
+  slice(c(2, 7, 10, 31)) |> select(name:sex)
+```
+
+---
+
+## Rebanadas de datos: slice()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  rebanadas(posiciones)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  slice(posiciones)
+```
+:::
+:::
+
+Disponemos de opciones por defecto:
+
+* con `slice_head(n = ...)` y `slice_tail(n = ...)` podemos obtener la [**cabecera y cola**]{.hl-yellow} de la tabla
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> slice_head(n = 2)
+```
+
+```{r}
+#| echo: false
+starwars |> slice_head(n = 2) |> select(name:hair_color)
+```
+:::
+
+::: {.column width="\"50%"}
+```{r}
+#| eval: false
+starwars |> slice_tail(n = 2)
+```
+
+```{r}
+#| echo: false
+starwars |> slice_tail(n = 2) |> select(name:hair_color)
+```
+:::
+:::
+
+---
+
+## Rebanadas de datos: slice()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  rebanadas(posiciones)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  slice(posiciones)
+```
+:::
+:::
+
+Disponemos de opciones por defecto:
+
+* con `slice_max()` y `slice_min()` obtenemos la [**filas con menor/mayor valor de una variable**]{.hl-yellow} (si empate, todas salvo que `with_ties = FALSE`) que indicamos en `order_by = ...`
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> slice_min(mass, n = 2)
+```
+
+```{r}
+#| echo: false
+starwars |> slice_min(n = 2, order_by = mass) |> select(name:hair_color)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> slice_max(height, n = 2)
+```
+
+```{r}
+#| echo: false
+starwars |> slice_max(n = 2, order_by = height) |> select(name:hair_color)
+```
+:::
+:::
+
+---
+
+## Aleatorio: slice_sample()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  rebanadas_aleatorias(posiciones)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  slice_sample(posiciones)
+```
+:::
+:::
+
+El conocido como [**muestreo aleatorio simple**]{.hl-yellow} se basa en [**seleccionar individuos aleatoriamente**]{.hl-yellow}, de forma que cada uno tenga ciertas [**probabilidades**]{.hl-yellow} de ser seleccionado. Con `slice_sample(n = ...)` podemos extraer n registros aleatoriamente (a priori equiprobables).
+
+```{r}
+starwars |> slice_sample(n = 2)
+```
+
+---
+
+## Aleatorio: slice_sample()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  rebanadas_aleatorias(posiciones)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  slice_sample(posiciones)
+```
+:::
+:::
+
+También podremos indicarle la [**proporción de datos a samplear**]{.hl-yellow} (en lugar del número) y si queremos que sea [**con reemplazamiento (que se puedan repetir)**]{.hl-yellow}.
+
+```{r}
+# 5% de registros aleatorios con reemplazamiento
+starwars |> 
+  slice_sample(prop = 0.05, replace = TRUE)
+
+```
+
+
+---
+
+
+## Aleatorio: slice_sample()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  rebanadas_aleatorias(posiciones)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  slice_sample(posiciones)
+```
+:::
+:::
+
+Como decíamos, «aleatorio» no es igual que «equiprobable», así que podemos pasarle un [**vector de probabilidades**]{.hl-yellow}. Por ejemplo, vamos a forzar que sea muy improbable sacar una fila que no sean las dos primeras
+
+```{r}
+starwars |>
+  slice_sample(n = 2, weight_by = c(0.495, 0.495, rep(0.01/85, 85)))
+```
+
+. . .
+
+```{r}
+starwars |>
+  slice_sample(n = 2, weight_by = c(0.495, 0.495, rep(0.01/85, 85)))
+```
+
+---
+
+## Paréntesis: sample()
+
+La función `slice_sample()` es simplemente una integración de `{tidyverse}` de la función básica de `R` conocida como `sample()` que nos permite [**muestrear elementos**]{.hl-yellow}
+
+. . .
+
+Por ejemplo, vamos a [**muestrear 10 tiradas de un dado**]{.hl-yellow}, indicándole
+
+- [**soporte**]{.hl-purple} de nuestra variable aleatorio (valores permitidos en `x`)
+- [**tamaño**]{.hl-purple} muestral (`size`)
+- [**reemplazamiento**]{.hl-purple} (si `TRUE` entonces pueden salir repetidas, como en el caso del dado)
+
+```{r}
+sample(x = 1:6, size = 10, replace = TRUE)
+```
+
+
+
+---
+
+## 💻 Tu turno {#tu-turno-9b}
+
+[**Intenta realizar los siguientes ejercicios sin mirar las soluciones**]{style="color:#444442;"}
+
+::: panel-tabset
+### [**Ejercicio 1**]{.hl-yellow}
+
+📝 Selecciona solo los personajes que sean humanos y de ojos marrones, para después ordernarlos en altura descendente y peso ascendente.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  filter(eye_color == "brown" & species == "Human") |> 
+  arrange(height, desc(mass))
+```
+
+### [**Ejercicio 2**]{.hl-yellow}
+
+📝 Extrae 3 registros aleatoriamente.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> slice_sample(n = 3)
+```
+
+### [**Ejercicio 3**]{.hl-yellow}
+
+📝 Extrae el 10% de los registros aleatoriamente.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> slice_sample(prop = 0.1)
+```
+
+### [**Ejercicio 4**]{.hl-yellow}
+
+📝 Extrae aleatoriamente 10 personajes pero de forma que la probabilidad de que salga cada uno sea proporcional a su peso (más pesados, más probable)
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  drop_na(mass) |> 
+  slice_sample(n = 10, weight_by = mass)
+```
+
+### [**Ejercicio 5**]{.hl-yellow}
+
+📝 Selecciona los 3 personajes más mayores.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> slice_max(birth_year, n = 3)
+```
+
+
+:::
+
+
+
+# Operaciones con columnas {#tidyverse-columnas}
+
+[**Operaciones con columnas en tidyverse**]{style="color:#444442;"}
+
+---
+
+
+## Reordenar filas: arrange()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> ordenar(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> arrange(var1, var2, ...)
+```
+:::
+:::
+
+También podemos [**ordenar filas**]{.hl-yellow} en función de alguna variable con `arrange()`
+
+```{r}
+#| eval: false
+starwars |> arrange(mass)
+```
+
+```{r}
+#| echo: false
+starwars |> arrange(mass) |> select(name:eye_color) |> slice(1:5) 
+```
+
+. . .
+
+Por [**defecto de menor a mayor**]{.hl-yellow} pero podemos [**invertir el orden**]{.hl-purple} con `desc()`
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> arrange(desc(height))
+```
+
+```{r}
+#| echo: false
+starwars |> arrange(desc(height)) |> select(name:mass) |> slice(1:5) 
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> arrange(mass, desc(height))
+```
+
+```{r}
+#| echo: false
+starwars |> arrange(mass, desc(height)) |> select(name:mass) |> slice(1:5) 
+```
+:::
+:::
+
+---
+
+## Eliminar duplicados: distinct()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> sin_duplicados(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> distinct(var1, var2, ...)
+```
+:::
+:::
+
+Muchas veces necesitaremos asegurarnos que no hay duplicados en alguna variable (DNI) y podemos [**eliminar filas duplicadas**]{.hl-yellow} con `distinct()`.
+
+```{r}
+starwars |> distinct(sex)
+```
+
+. . .
+
+Para mantener todas las columnas de la tabla usaremos `.keep_all = TRUE`.
+
+```{r}
+#| eval: false
+starwars |> distinct(sex, .keep_all = TRUE)
+```
+
+```{r}
+#| echo: false
+starwars |> distinct(sex, .keep_all = TRUE) |> slice(1:3)
+```
+
+---
+
+## Añadir filas: bind_rows()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+tibble1 |> encuadernar_filas(tibble2)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+tibble1 |> bind_rows(tibble2)
+```
+:::
+:::
+
+Por último, podemos [**concatenar nuevas filas**]{.hl-yellow} con `bind_rows()` con [**las nuevas observaciones en tabla**]{.hl-red} (si no cuadran columnas rellena con ausentes)
+
+```{r}
+datos <-
+  tibble("nombre" = c("javi", "laura"), "edad" = c(33, 50))
+datos
+```
+
+. . .
+
+```{r}
+datos |> bind_rows(tibble("nombre" = c("carlos", NA), "cp" = c(28045, 28019)))
+```
+
+---
+
+## 💻 Tu turno {#tu-turno-10a}
+
+[**Intenta realizar los siguientes ejercicios sin mirar las soluciones**]{style="color:#444442;"}
+
+::: panel-tabset
+### [**Ejercicio 1**]{.hl-yellow}
+
+📝 Para saber que valores únicos hay en el color de pelo, elimina duplicados de la variable `hair_color`, eliminando antes los ausentes de dicha variable.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  drop_na(hair_color) |> 
+  distinct(hair_color)
+```
+
+### [**Ejercicio 2**]{.hl-yellow}
+
+📝 De los personajes que son humanos y miden más de 160 cm, elimina duplicados en color de ojos, elimina ausentes en peso, selecciona los 3 más altos, y orden de mayor a menor peso. Devuelve la tabla.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  filter(species == "Human" & height > 160) |> 
+  distinct(eye_color, .keep_all = TRUE) |> 
+  drop_na(mass) |> 
+  slice_max(height, n = 3) |> 
+  arrange(desc(mass))
+```
+:::
+
+---
+
+## Resumen
+
+
+La clave de `{tidyverse}` es la [**legibilidad**]{.hl-yellow}: es importantísimo que el código se entienda, por nuestro yo el futuro pero también por la [**transparencia algorítmica**]{.hl-yellow} hacia los demás
+
+[**Por ejemplo**]{.hl-purple}: quitaremos ausentes de la variable peso, filtraremos los personajes humanos y altura superior a 140cm, sin duplicados en el color de pelo, extrayendo los 5 más altos y obteniendo 2 personajes aleatorios finalmente.
+
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+#| code-line-numbers: "2"
+starwars |>
+  elimino_ausentes(peso) |> 
+  filtro(especie humana Y altura > 140 cm) |> 
+  sin_duplicados(color de pelo) |>
+  rebanadas_max(peso, n = 5) |> 
+  rebanadas_aleatorias(n = 2)
+```
+:::
+
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+#| code-line-numbers: "2"
+starwars |>
+  drop_na(mass) |> 
+  filter(species == "Human" & height > 140) |> 
+  distinct(hair_color, .keep_all = TRUE) |>
+  slice_max(mass, n = 5) |> 
+  slice_sample(n = 2)
+```
+:::
+:::
+
+---
+
+## Resumen
+
+
+La clave de `{tidyverse}` es la [**legibilidad**]{.hl-yellow}: es importantísimo que el código se entienda, por nuestro yo el futuro pero también por la [**transparencia algorítmica**]{.hl-yellow} hacia los demás
+
+[**Por ejemplo**]{.hl-purple}: quitaremos ausentes de la variable peso, filtraremos los personajes humanos y altura superior a 140cm, sin duplicados en el color de pelo, extrayendo los 5 más altos y obteniendo 2 personajes aleatorios finalmente.
+
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+#| code-line-numbers: "3"
+starwars |>
+  elimino_ausentes(peso) |> 
+  filtro(especie humana Y altura > 140 cm) |> 
+  sin_duplicados(color de pelo) |>
+  rebanadas_max(peso, n = 5) |> 
+  rebanadas_aleatorias(n = 2)
+```
+:::
+
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+#| code-line-numbers: "3"
+starwars |>
+  drop_na(mass) |> 
+  filter(species == "Human" & height > 140) |> 
+  distinct(hair_color, .keep_all = TRUE) |>
+  slice_max(mass, n = 5) |> 
+  slice_sample(n = 2)
+```
+:::
+:::
+
+---
+
+## Resumen
+
+
+La clave de `{tidyverse}` es la [**legibilidad**]{.hl-yellow}: es importantísimo que el código se entienda, por nuestro yo el futuro pero también por la [**transparencia algorítmica**]{.hl-yellow} hacia los demás
+
+[**Por ejemplo**]{.hl-purple}: quitaremos ausentes de la variable peso, filtraremos los personajes humanos y altura superior a 140cm, sin duplicados en el color de pelo, extrayendo los 5 más altos y obteniendo 2 personajes aleatorios finalmente.
+
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+#| code-line-numbers: "4"
+starwars |>
+  elimino_ausentes(peso) |> 
+  filtro(especie humana Y altura > 140 cm) |> 
+  sin_duplicados(color de pelo) |>
+  rebanadas_max(peso, n = 5) |> 
+  rebanadas_aleatorias(n = 2)
+```
+:::
+
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+#| code-line-numbers: "4"
+starwars |>
+  drop_na(mass) |> 
+  filter(species == "Human" & height > 140) |> 
+  distinct(hair_color, .keep_all = TRUE) |>
+  slice_max(mass, n = 5) |> 
+  slice_sample(n = 2)
+```
+:::
+:::
+
+---
+
+## Resumen
+
+
+La clave de `{tidyverse}` es la [**legibilidad**]{.hl-yellow}: es importantísimo que el código se entienda, por nuestro yo el futuro pero también por la [**transparencia algorítmica**]{.hl-yellow} hacia los demás
+
+[**Por ejemplo**]{.hl-purple}: quitaremos ausentes de la variable peso, filtraremos los personajes humanos y altura superior a 140cm, sin duplicados en el color de pelo, extrayendo los 5 más altos y obteniendo 2 personajes aleatorios finalmente.
+
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+#| code-line-numbers: "5"
+starwars |>
+  elimino_ausentes(peso) |> 
+  filtro(especie humana Y altura > 140 cm) |> 
+  sin_duplicados(color de pelo) |>
+  rebanadas_max(peso, n = 5) |> 
+  rebanadas_aleatorias(n = 2)
+```
+:::
+
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+#| code-line-numbers: "5"
+starwars |>
+  drop_na(mass) |> 
+  filter(species == "Human" & height > 140) |> 
+  distinct(hair_color, .keep_all = TRUE) |>
+  slice_max(mass, n = 5) |> 
+  slice_sample(n = 2)
+```
+:::
+:::
+
+---
+
+## Resumen
+
+La clave de `{tidyverse}` es la [**legibilidad**]{.hl-yellow}: es importantísimo que el código se entienda, por nuestro yo el futuro pero también por la [**transparencia algorítmica**]{.hl-yellow} hacia los demás
+
+[**Por ejemplo**]{.hl-purple}: quitaremos ausentes de la variable peso, filtraremos los personajes humanos y altura superior a 140cm, sin duplicados en el color de pelo, extrayendo los 5 más altos y obteniendo 2 personajes aleatorios finalmente.
+
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+#| code-line-numbers: "6"
+starwars |>
+  elimino_ausentes(peso) |> 
+  filtro(especie humana Y altura > 140 cm) |> 
+  sin_duplicados(color de pelo) |>
+  rebanadas_max(peso, n = 5) |> 
+  rebanadas_aleatorias(n = 2)
+```
+:::
+
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+#| code-line-numbers: "6"
+starwars |>
+  drop_na(mass) |> 
+  filter(species == "Human" & height > 140) |> 
+  distinct(hair_color, .keep_all = TRUE) |>
+  slice_max(mass, n = 5) |> 
+  slice_sample(n = 2)
+```
+:::
+:::
+
+
+--- 
+
+## 🐣 Caso práctico {#caso-práctico-10}
+
+Vamos a usar el dataset `biopsy` que podemos encontrar en el agregador de datasets <https://vincentarelbundock.github.io/Rdatasets/index.html>. El [**dataset contiene datos de 699 pacientes a lo que se les realizó una biopsia de pecho**]{.hl-yellow}, obteniendo 11 variables (una que hace de id y 10 escalas medidas de 1 a 10)
+
+Puedes ver la documentación en <https://vincentarelbundock.github.io/Rdatasets/doc/MASS/biopsy.html>
+
+. . .
+
+1. [**Importa el `.csv` desde la propia web**]{.hl-yellow} (a través del enlace del archivo)
+
+. . .
+
+2. Habrás visto que hay 12 columnas en realidad importadas (la primera nos sobra ya que es solo un contador de filas). Vuelve a cargarlo [**seleccionando en la carga**]{.hl-yellow} solo desde `ID` hasta `class`
+
+. . .
+
+3. La variable `ID` en realidad es un identificador (una cualitativa). Repite la carga [**especificando los tipos de datos**]{.hl-yellow}: cualitativa o factor para ID y class, números para el resto de variables)
+
+
+---
+
+## 🐣 Caso práctico {#caso-práctico-10}
+
+4. La variable `ID` debería ser identificador de cada registro: [**elimina duplicados**]{.hl-yellow} por dicha variable del dataset anterior.
+
+. . .
+
+5. Del dataset anterior [**filtra**]{.hl-yellow} solo los pacientes con tumor maligno y la variable `V9` con valor 4 o inferior, [**eliminando además cualquier registro que contenga ausente**]{.hl-yellow} en cualquiera de la variables.
+
+. . .
+
+7. Del dataset anterior obtén una [**muestra del 20% de los datos**]{.hl-yellow} (cada registro puede ser elegido con la misma probabilidad), y [**órdenalos**]{.hl-yellow} por de mayor a menor por la variable `V1` y, en caso de empate, de menor a mayor por la variable `V2`
+
+---
+
+
+
+## Selección columnas: select()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> selecciono(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> select(var1, var2, ...)
+```
+:::
+:::
+
+La opción más sencilla para [**seleccionar variables por nombre**]{.hl-yellow} es `select()`, dando como argumentos los nombres de columnas [**sin comillas**]{.hl-purple}.
+
+```{r}
+starwars |> select(name, hair_color)
+```
+
+---
+
+## Selección columnas: select()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> selecciono(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> select(var1, var2, ...)
+```
+:::
+:::
+
+La función `select()` nos permite seleccionar varias variables a la vez, incluso [**concatenando sus nombres como si fuesen índices numéricos**]{.hl-yellow}
+
+```{r}
+#| eval: false
+starwars |> select(name:eye_color) 
+```
+
+```{r}
+#| echo: false
+starwars |> select(name:eye_color) |> slice(1:4)
+```
+
+. . .
+
+Y podemos [**deseleccionar columnas**]{.hl-yellow} con `-` delante
+
+```{r}
+#| eval: false
+starwars |>  select(-mass, -(eye_color:starships))
+```
+
+```{r}
+#| echo: false
+starwars |> select(-mass, -(eye_color:starships)) |> slice(1:4)
+```
+
+---
+
+## Selección columnas: select()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> selecciono(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> select(var1, var2, ...)
+```
+:::
+:::
+
+Tenemos además [**palabras reservadas**]{.hl-yellow}: `everything()` [**todas las variables**]{.hl-purple}...
+
+```{r}
+#| eval: false
+starwars |> select(mass, homeworld, everything())
+```
+
+```{r}
+#| echo: false
+starwars |> select(mass, homeworld, everything()) |> slice(1:4)
+```
+
+. . .
+
+...y `last_col()` para referirnos a [**la última columna**]{.hl-purple}.
+
+```{r}
+#| eval: false
+starwars |> select(name:mass, homeworld, last_col())
+```
+
+```{r}
+#| echo: false
+starwars |> select(name:mass, homeworld, last_col()) |> slice(1:4)
+```
+
+---
+
+## Selección columnas: select()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> selecciono(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> select(var1, var2, ...)
+```
+:::
+:::
+
+También podemos jugar con [**patrones**]{.hl-yellow} en el nombre, aquellas que [**comiencen por un prefijo**]{.hl-purple} (`starts_with()`), [**terminen con un sufijo**]{.hl-purple} (`ends_with()`), [**contengan un texto**]{.hl-purple} (`contains()`) o cumplan una [**expresión regular**]{.hl-purple} (`matches()`).
+
+```{r}
+# variables cuyo nombre acaba en "color" y contengan sexo o género
+starwars |> select(ends_with("color"), matches("sex|gender"))
+```
+
+---
+
+## Selección columnas: select()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> selecciono(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> select(var1, var2, ...)
+```
+:::
+:::
+
+Incluso podemos [**seleccionar por rango numérico**]{.hl-yellow} si tenemos variables con un prefijo y números.
+
+```{r}
+datos <-
+  tibble("semana1" = c(115, 141, 232), "semana2" = c(7, NA, 17),
+         "semana3" = c(95, 162, NA), "semana4" = c(11, 19, 15),
+         "semana5" = c(NA, 262, 190), "semana6" = c(21, 15, 23))
+```
+
+. . .
+
+Con `num_range()` podemos seleccionar con un prefijo y una secuencia numérica.
+
+```{r}
+datos |> select(num_range("semana", 1:4))
+```
+
+---
+
+## Selección columnas: select()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> selecciono(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> select(var1, var2, ...)
+```
+:::
+:::
+
+Por último, podemos seleccionar columnas por [**tipo de dato**]{.hl-yellow} haciendo uso de `where()` y dentro una función que devuelva un valor lógico de tipo de dato.
+
+```{r}
+# Solo columnas numéricas o de texto
+starwars |> select(where(is.numeric) | where(is.character))
+```
+
+---
+
+
+## Mover columnas: relocate()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  recolocar(var1, despues_de = var2)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  relocate(var1, .after = var2)
+```
+:::
+:::
+
+Para facilitar la [**recolocación de variables**]{.hl-yellow} tenemos una función para ello, `relocate()`, indicándole en `.after` o `.before` [**detrás**]{.hl-purple} o [**delante**]{.hl-purple} de qué columnas queremos moverlas.
+
+```{r}
+starwars |> relocate(species, .before = name)
+```
+
+---
+
+## Renombrar: rename()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> renombrar(nuevo = antiguo)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> rename(nuevo = antiguo)
+```
+:::
+:::
+
+A veces también podemos querer [**modificar la «metainformación»**]{.hl-yellow} de los datos, [**renombrando columnas**]{.hl-yellow}. Para ello usaremos de `rename()` poniendo [**primero el nombre nuevo**]{.hl-purple} y luego el [**antiguo**]{.hl-purple}.
+
+```{r}
+starwars |> rename(nombre = name, altura = height, peso = mass)
+```
+
+---
+
+## Extraer columnas: pull()
+
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> retirar(var)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> pull(var)
+```
+:::
+:::
+
+
+Si observas la salida de los `select()` [**sigue siendo una tabla tibble**]{.hl-yellow}, ya que nos preserva la naturaleza de nuestros datos.
+
+```{r}
+starwars |> select(name)
+```
+
+---
+
+
+## Extraer columnas: pull()
+
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> retirar(var)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> pull(var)
+```
+:::
+:::
+
+
+A veces no querremos dicha estructura sino [**extraer literalmente la columna en un vector**]{.hl-yellow}, algo que podemos hacer con `pull()`
+
+```{r}
+starwars |> pull(name)
+```
+
+
+---
+
+
+## 💻 Tu turno {#tu-turno-10b}
+
+[**Intenta realizar los siguientes ejercicios sin mirar las soluciones**]{style="color:#444442;"}
+
+::: panel-tabset
+### [**Ejercicio 1**]{.hl-yellow}
+
+📝 Filtra el conjunto de personajes y quédate solo con aquellos que en la variable `height` no tengan un dato ausente. Con los datos obtenidos del filtro anterior, selecciona solo las variables name, height, así como todas aquellas variables que CONTENGAN la palabra color en su nombre.
+
+### [**Ejercicio 2**]{.hl-yellow}
+
+📝 Con los datos obtenidos del ejercicio anterior, traduce el nombre de las columnas a castellano
+
+### [**Ejercicio 3**]{.hl-yellow}
+
+📝 Con los datos obtenidos del ejercicio anterior, coloca la variable de color de pelo justo detrás de la variable de nombres.
+
+### [**Ejercicio 4**]{.hl-yellow}
+
+📝 Con los datos obtenidos del ejercicio anterior, comprueba cuántas modalidades únicas hay en la variable de color de pelo (sin usar `unique()`).
+
+### [**Ejercicio 5**]{.hl-yellow}
+
+📝 Del conjunto de datos originales, elimina las columnas de tipo lista, y tras ello elimina duplicados en la variable `eye_color`. Tras eliminar duplicados extrae dicha columna en un vector.
+
+
+:::
+
+---
+
+## 🐣 Caso práctico {#caso-práctico-10b}
+
+Del conjunto de datos original de starwars, con [**solo los personajes cuya altura es conocida**]{.hl-yellow}, [**extrae en un vector dicha variable**]{.hl-purple}.
+
+Tras dicha extracción, usa el vector para realizar un [**muestreo estratificado (por sexo) del 50% de los datos**]{.hl-yellow}, de manera que (para cada sexo) la [**probabilidad de cada personaje**]{.hl-yellow} de ser elegido sea [**inversamente proporcional a su altura**]{.hl-yellow} (más bajitos, más opciones)
+
+---
+
+## Modificar columnas: mutate()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> modificar(nueva = funcion())
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> mutate(nueva = funcion())
+```
+:::
+:::
+
+En muchas ocasiones querremos [**modificar o crear variables**]{.hl-yellow} con `mutate()`. 
+
+
+. . . 
+
+Vamos a crear por ejemplo una nueva variable `height_m` con la altura en metros.
+
+```{r}
+starwars |> mutate(height_m = height / 100)
+```
+
+---
+
+## Modificar columnas: mutate()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> modificar(nueva = funcion())
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> mutate(nueva = funcion())
+```
+:::
+:::
+
+Además con los argumentos opcionales podemos [**recolocar la columna modificada**]{.hl-yellow}
+
+```{r}
+starwars |> 
+  mutate(height_m = height / 100,
+         IMC = mass / (height_m^2), .before = name)
+```
+
+---
+
+## Modificar columnas: mutate()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> modificar(nueva = funcion())
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> mutate(nueva = funcion())
+```
+:::
+:::
+
+::: callout-important
+## Importante...
+
+Cuando aplicamos `mutate()`, debemos de acordarnos que las [**operaciones se realizan de manera vectorial**]{.hl-yellow}, elemento a elemento, por lo que la función que usemos dentro debe devolver un vector de igual longitud. En caso contrario, [**devolverá una constante**]{.hl-red}
+:::
+
+. . .
+
+```{r}
+starwars |> 
+  mutate(constante = mean(mass, na.rm = TRUE), .before = name)
+```
+
+---
+
+## Recategorizar: if_else()
+
+También podemos combinar `mutate()` con la expresión de control `if_else()` para [**recategorizar la variable**]{.hl-yellow}: si [**se cumple una condición**]{.hl-purple}, hace una cosa, en caso contrario otra.
+
+```{r}
+starwars |> 
+  mutate(human = if_else(species == "Human", "Human", "Not Human"),
+         .after = name) |> 
+  select(name:mass)
+```
+
+---
+
+## Recategorizar: case_when()
+
+Para [**recategorizaciones más complejas**]{.hl-yellow} tenemos `case_when()`, por ejemplo, para crear una categoría de los personajes en función de su altura.
+
+```{r}
+starwars |> 
+  drop_na(height) |> 
+  mutate(altura = case_when(height < 120 ~ "enanos",
+                            height < 160 ~ "bajito",
+                            height < 180 ~ "normal",
+                            height < 200 ~ "alto",
+                            TRUE ~ "gigante"), .before = name)
+```
+
+---
+
+## 💻 Tu turno {#tu-turno-11}
+
+[**Intenta realizar los siguientes ejercicios sin mirar las soluciones**]{style="color:#444442;"}
+
+::: panel-tabset
+### [**Ejercicio 1**]{.hl-yellow}
+
+📝 Selecciona solo las variables nombre, altura y así como todas aquellas variables relacionadas con el color, a la vez que te quedas solo con aquellos que no tengan ausente en la altura.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> 
+  select(name, height, contains("color")) |> 
+  drop_na(height)
+```
+
+### [**Ejercicio 2**]{.hl-yellow}
+
+📝 Con los datos obtenidos del ejercicio anterior, traduce el nombre de las columnas a castellano.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> 
+  select(name, height, contains("color")) |> 
+  drop_na(height) |> 
+  rename(nombre = name, altura = height,
+         color_pelo = eye_color, color_piel = skin_color,
+         color_pelo = hair_color)
+```
+
+### [**Ejercicio 3**]{.hl-yellow}
+
+📝 Con los datos obtenidos del ejercicio anterior, coloca la variable de color de pelo justo detrás de la variable de nombres.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  select(name, height, contains("color")) |> 
+  drop_na(height) |> 
+  rename(nombre = name, altura = height,
+         color_pelo = eye_color, color_piel = skin_color,
+         color_pelo = hair_color) |> 
+  relocate(color_pelo, .after = nombre)
+```
+
+### [**Ejercicio 4**]{.hl-yellow}
+
+📝 Con los datos originales, comprueba cuántas modalidades únicas hay en la variable de color de pelo.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> 
+  distinct(hair_color) |> 
+  nrow()
+```
+
+### [**Ejercicio 5**]{.hl-yellow}
+
+📝 Del dataset original, selecciona solo las variables numéricas y de tipo texto. Tras ello define una nueva variable llamada `under_18` que nos recategorice la variable de edad: `TRUE` si es menor de edad y `FALSE` en caso contrario
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> 
+  select(where(is.numeric) | where(is.character)) |> 
+  mutate(under_18 = birth_year < 18)
+```
+
+### [**Ejercicio 6**]{.hl-yellow}
+
+📝 Del dataset original, crea una nueva columna llamada `auburn` (cobrizo/caoba) que nos diga TRUE si el color de pelo contiene dicha palabra y FALSE en caso contrario (reminder `str_detect()`).
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> 
+  mutate(auburn = str_detect(hair_color, "auburn"))
+```
+
+### [**Ejercicio 7**]{.hl-yellow}
+
+📝 Del dataset original, incluye una columna que calcule el IMC. Tras ello, crea una nueva variable que valga `NA` si no es humano, `delgadez` por debajo de 18, `normal` entre 18 y 30, `sobrepeso` por encima de 30.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> 
+  mutate(IMC = mass / ((height/100)^2),
+         IMC_recat = case_when(species != "Human" ~ NA,
+                               IMC < 18 ~ "delgadez",
+                               IMC < 30 ~ "normal",
+                               TRUE ~ "sobrepeso"),
+         .after = name)
+```
+
+:::
+
+---
+
+
+## 🐣 Caso práctico {#caso-11}
+
+
+Haciendo uso de todo lo aprendido, vamos a proceder a [**crear una tabla con datos de bebés**]{.hl-yellow} de tamaño `n = 20` en donde [**simulemos el sexo de los bebés y su peso**]{.hl-yellow}
+
+. . .
+
+1. Crea un `tibble` con dos columnas, una llamada `id_bebe` y otra llamada `sexo`. En el primer caso debe ir de 1 a 20. En el segundo caso, simula su sexo de manera que haya un 0.5 de probabilidad de `chico` y 0.5 de `chica`.
+
+
+2. Conocido el sexo, crea una tercera columna llamada `peso` en la que simules dicho valor. Supondremos que para los chicos el peso sigue una distribución $N(\mu = 3.266kg, \sigma = 0.514)$ y que para las chicas sigue una distribución $N(\mu = 3.155kg, \sigma = 0.495)$.
+
+. . .
+
+```{r}
+tb <- 
+  tibble("id_bebe" = 1:20,
+         "sexo" = sample(c("chico", "chica"), size = 20, replace = TRUE))
+microbenchmark::microbenchmark(tb |> 
+  mutate(peso =
+           rnorm(n = 20, mean = if_else(sexo == "chico", 3.266, 3.155),
+                 sd = if_else(sexo == "chico", 0.514, 0.495))), for (i in 1:20) { tb[i, 3] = ifelse(tb$sexo[i] == "chico", rnorm(n = 1, mean = 3.266, sd = 0.514), rnorm(n = 1, mean = 3.155, sd = 0.495)) }, times = 1e3)
+```
+
+
+# Resúmenes {#summarise}
+
+[**Summarise y group_by(). Contar y resumir: estadísticas desagregadas por factores/grupos.**]{style="color:#444442;"}
+
+---
+
+
+## Contar: count()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> contar(var1, var2)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> count(var1, var2)
+```
+:::
+:::
+
+Hasta ahora solo hemos transformado o consultado los datos pero no hemos generado estadísticas. Empecemos por lo sencillo: [**¿cómo contar (frecuencias)?**]{.hl-yellow}
+
+. . .
+
+Cuando lo usamos en solitario `count()` nos devolverá simplemente el número de registros , pero cuando lo usamos con variables `count()` calcula lo que se conoce como [**frecuencias**]{.hl-yellow}: [**número de elementos de cada modalidad**]{.hl-purple}.
+
+```{r}
+starwars |> count(sex)
+```
+
+---
+
+## Contar: count()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> contar(var1, var2)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> count(var1, var2)
+```
+:::
+:::
+
+Además si pasamos varias variables nos calcula lo que se conoce como una [**tabla de contigencia**]{.hl-yellow}. Con `sort = TRUE` nos devolverá el [**conteo ordenado**]{.hl-purple} (más frecuentes primero).
+
+```{r}
+starwars |> count(sex, gender, sort = TRUE)
+```
+
+---
+
+## Agrupar: group_by()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  agrupar(var1, var2) |> 
+  accion() |> 
+  desagrupar()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  group_by(var1, var2) |> 
+  accion() |> 
+  ungroup()
+```
+:::
+:::
+
+Una de las [**funciones más potentes**]{.hl-yellow} a combinar con las acciones vistas es `group_by()`, que nos permitirá [**agrupar nuestros registros**]{.hl-yellow} previamente
+
+```{r}
+starwars |> 
+  group_by(sex) |>
+  count() |>
+  ungroup()
+```
+
+---
+
+## Agrupar: group_by()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  agrupar(var1, var2) |> 
+  accion() |> 
+  desagrupar()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  group_by(var1, var2) |> 
+  accion() |> 
+  ungroup()
+```
+:::
+:::
+
+Cuando apliquemos `group_by()` es importante entender que [**NO MODIFICA los datos**]{.hl-yellow}, sino que nos crea una [**variable de grupo**]{.hl-yellow} (subtablas por cada grupo) que modificará las acciones futuras: las [**operaciones se aplicarán a cada subtabla por separado**]{.hl-purple}
+
+. . .
+
+Por ejemplo, imaginemos que queremos extraer el personaje más alto con `slice_max()`.
+
+```{r}
+starwars |> slice_max(height)
+```
+
+
+---
+
+## Agrupar: group_by()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  agrupar(var1, var2) |> 
+  accion() |> 
+  desagrupar()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  group_by(var1, var2) |> 
+  accion() |> 
+  ungroup()
+```
+:::
+:::
+
+¿Y si queremos [**extraer el personaje más alto pero...de cada uno de los sexos**]{.hl-yellow}?
+
+. . .
+
+```{r}
+starwars |>
+  group_by(sex) |> 
+  slice_max(height) |> 
+  ungroup()
+```
+
+---
+
+## Agrupar: group_by()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  agrupar(var1, var2) |> 
+  accion() |> 
+  desagrupar()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  group_by(var1, var2) |> 
+  accion() |> 
+  ungroup()
+```
+:::
+:::
+
+::: columns
+::: {.column width="50%"}
+![](img/tidydatatutor_1.jpg)
+:::
+
+::: {.column width="50%"}
+![](img/tidydatatutor_2.jpg)
+:::
+:::
+
+La web <https://tidydatatutor.com/> permite visualizar las operaciones de `{tidyverse}` (con el pipe antiguo)
+
+---
+
+## Agrupar: group_by()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |>
+  agrupar(var1, var2) |> 
+  accion() |>
+  desagrupar()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  group_by(var1, var2) |> 
+  accion() |>
+  ungroup()
+```
+:::
+:::
+
+::: callout-important
+## Importante
+
+Recuerda siempre [**hacer ungroup**]{.hl-red} para eliminar la variable de grupo creada
+:::
+
+. . .
+
+En la nueva versión de `{dplyr}` ahora se [**permite incluir la variable de grupo**]{.hl-yellow} en la llamada a muchas funciones con el argumento `by = ...` o `.by = ...`
+
+```{r}
+#| eval: false
+starwars |> slice_max(height, by = sex)
+```
+
+```{r}
+#| echo: false
+starwars |> slice_max(height, by = sex) |> select(name:eye_color)
+```
+
+---
+
+## Fila-a-fila: rowwise()
+
+Una opción muy útil usada antes de una operación también es `rowwise()`: toda [**operación que venga después se aplicará en cada fila por separado**]{.hl-yellow}. Por ejemplo, vamos a definir un conjunto dummy de notas.
+
+```{r}
+notas <- tibble("mates" = c(7.5, 8, 9.1, 3),
+                "lengua" = c(8, 6, 6.5, 9.2))
+```
+
+. . .
+
+Si aplicamos la media directamente el valor será idéntico ya que nos ha hecho la media global, pero nos gustaría sacar una [**media por registro**]{.hl-yellow}. Para eso usaremos `rowwise()`
+
+```{r}
+notas |> 
+  rowwise() |> 
+  mutate(media_curso = mean(c(mates, lengua)))
+```
+
+---
+
+## Resumir: summarise()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> resumir()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> summarise()
+```
+:::
+:::
+
+Por último tenemos `summarise()`, que nos permitirá sacar resúmenes estadísticos. Por ejemplo, vamos a [**calcular la media de las alturas**]{.hl-yellow}.
+
+```{r}
+starwars |> 
+  drop_na(height) |> 
+  summarise(media_altura = mean(height))
+```
+
+. . .
+
+::: callout-warning
+## Cuidado
+
+Fíjate que `mutate()` devuelve [**tantas filas como registros originales**]{.hl-yellow}, mientras que con `summarise()` calcula un [**nuevo dataset de resumen**]{.hl-purple}, solo incluyendo aquello que esté indicado.
+:::
+
+---
+
+## Resumir: summarise()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> resumir()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> summarise()
+```
+:::
+:::
+
+Si además esto lo [**combinamos con la agrupación**]{.hl-yellow} de `group_by()` o `.by = ...`, en pocas líneas de código puedes obtener [**estadísticas desagreagadas**]{.hl-purple}
+
+```{r}
+starwars |> 
+  drop_na(sex, height, mass) |> 
+  summarise(media_altura = mean(height),
+            media_peso = mean(mass),
+            .by = sex)
+```
+
+---
+
+## Resumir: reframe()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+datos |> resumir()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> reframe()
+```
+:::
+:::
+
+En el nuevo `{dplyr}` han incluido `reframe()` para evitar problemas de `summarise()` cuando [**devolvemos más de un valor por variable**]{.hl-yellow}.
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| warning: true
+starwars |>
+  drop_na(mass) |>
+  summarise(quantile(mass))
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+starwars |>
+  drop_na(mass) |>
+  reframe(quantile(mass))
+```
+:::
+:::
+
+---
+
+## Selectores: across()
+
+Un truco es [**hacer uso de selectores**]{.hl-yellow} `across()` y `where()`. El primero nos permite [**actuar sobre varias columnas por nombre**]{.hl-purple} (con `mutate()` o `summarise()`)
+
+```{r}
+starwars |> summarise(medias = across(height:mass, mean, na.rm = TRUE), .by = sex)
+```
+
+. . .
+
+El segundo, `where()`, nos permite hacer lo mismo pero [**seleccionando por tipo**]{.hl-yellow}.
+
+```{r}
+starwars |> 
+  summarise(across(where(is.numeric), mean, na.rm = TRUE), .by = c(sex, gender))
+```
+
+---
+
+## 💻 Tu turno {#tu-turno-11b}
+
+[**Intenta realizar los siguientes ejercicios sin mirar las soluciones**]{style="color:#444442;"}
+
+::: panel-tabset
+### [**Ejercicio 1**]{.hl-yellow}
+
+📝 Calcula cuántos personajes hay de cada especie, ordenados de más a menor frecuencia.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> count(species, sort = TRUE)
+```
+
+### [**Ejercicio 2**]{.hl-yellow}
+
+📝 Tras eliminar ausentes en las variables de peso y estatura, añade una nueva variable que nos calcule el IMC de cada personaje, y determina el IMC medio de nuestros personajes desagregada por sexo
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  drop_na(mass, height) |> 
+  mutate(IMC = mass / ((height/100)^2)) |> 
+  summarise(IMC_medio = mean(IMC), .by = sex)
+```
+
+### [**Ejercicio 3**]{.hl-yellow}
+
+📝 Obtén el personaje más joven por cada sexo.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  slice_min(birth_year, by = sex)
+```
+
+### [**Ejercicio 4**]{.hl-yellow}
+
+📝 Obtén la edad del personaje más joven y más viejo de cada sexo.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  drop_na(birth_year) |>
+  summarise(min(birth_year), max(birth_year), .by = sex)
+```
+
+### [**Ejercicio 5**]{.hl-yellow}
+
+📝 Determina la cantidad de personajes en cada década (echa un vistazo a `round()`, primero sin desagregar y luego desagregado por sexo.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  count(birth_decade = round(birth_year, -1))
+```
+:::
+
+---
+
+## 🐣 Caso práctico {#caso-12}
+
+Vamos antes a hacer un [**repaso de lo aprendido**]{.hl-yellow} en `{tidyverse}`
+
+1. Carga la tabla billboard del paquete `{tidyr}`.
+
+```{r}
+#| code-fold: true
+#| eval: false
+billboard
+```
+
+2. Antes de nada, selecciona solo las [**primeras 52 semanas**]{.hl-yellow}. Tras ello convierte el dataset a [**tidydata**]{.hl-yellow} con los formatos y tipos adecuados para cada variable
+
+. . .
+
+3. Extrae la [**lista de artistas distintos**]{.hl-yellow} que aparecen en la tabla, incluyendo [**cuántas veces**]{.hl-yellow} aparece cada uno.
+
+. . .
+
+4. Determina [**cuántas canciones tiene cada artistal**]{.hl-yellow}
+
+---
+
+## 🐣 Caso práctico
+
+5. Determina las [**5 canciones que más semanas**]{.hl-yellow} aparecen en la lista de éxitos. 
+
+. . .
+
+6. Determina [**para cada artista la canción que más semanas**]{.hl-yellow} aparece en la lista de éxitos. 
+
+. . .
+
+7. Determina el [**artista con más canciones**]{.hl-yellow} en la lista
+
+. . .
+
+
+
+---
+
+## 🐣 Caso práctico
+
+
+8. Calcula la [**posición más alta**]{.hl-yellow} en la que ha estado cada canción. Calcula la posición más alta en la que ha estado un artista
+
+. . .
+
+9. Realiza un muestreo aleatorio estratificado, extrayendo el 50% de los datos pero manteniendo la proporción de datos entre los distintos cuatrimestres.
+
+
+# Comunicar: Quarto {#quarto}
+
+[**Comunicar resultados y material docente: rmd y Quarto**]{style="color:#444442;"}
+
+---
+
+## Comunicar: rmd y Quarto
+
+Una de las [**principales fortalezas**]{.hl-yellow} de `R` es la [**facilidad para generar informes, libros, webs, apuntes y hasta diapositivas**]{.hl-yellow} (este mismo material por ejemplo). Para ello [**instalaremos**]{.hl-purple} antes
+
+::: columns
+::: {.column width="40%"}
+-   el paquete `{rmarkdown}` (para generar archivos `.rmd`)
+
+```{r}
+#| eval: false
+install.packages("rmarkdown")
+```
+
+-   instalar [**Quarto**](https://quarto.org/docs/get-started/) (el «nuevo» `.rmd` ahora como `.qmd`)
+:::
+
+::: {.column width="60%"}
+![](img/quarto.png)
+:::
+:::
+
+
+---
+
+## Comunicar: rmd y Quarto
+
+Los archivos de extensión `.qmd` (o `.rmd`) nos permitirán fácilmente combinar:
+
+-   [**Markdown**]{.hl-yellow}: [**lenguaje tipado**]{.hl-purple} que nos permite crear contenido simple (tipo wordpress, con texto, **negritas**, _cursivas_, etc) con un diseño legible.
+
+. . .
+
+-   [**Matemáticas (latex)**]{.hl-yellow}: lenguaje para escribir notación matemática como $x^2$ o $\sqrt{y}$ o $\int_{a}^{b} f(x) dx$
+
+. . .
+
+-   [**Código y salidas**]{.hl-yellow}: podremos no solo mostrar el paso final sino el código que has ido realizando (no solo en `R`), con [**cajitas de código llamadas chunks**]{.hl-purple}.
+
+. . .
+
+-   Imágenes, [**gráficas**]{.hl-yellow}, tablas, estilos (css, js), etc.
+
+---
+
+## Comunicar: rmd y Quarto
+
+La principal ventaja de realizar este tipo de material en Quarto/Rmarkdown es que, al hacerlo desde `RStudio`, puedes generar un [**informe o una presentación sin salirte del entorno de programación**]{.hl-yellow} en el que estás trabajando
+
+De esta forma podrás analizar los datos, resumirlos y a la vez comunicarlos con la misma herramienta.
+
+. . .
+
+Recientemente el equipo de `RStudio` desarrolló [**Quarto**]{.hl-yellow}, una versión mejorada de Rmarkdown (archivos `.qmd`), con un formato un poco más estético y simple. Tienes toda la documentación y ejemplos en [**https://quarto.org/**](https://quarto.org/)
+
+---
+
+## Nuestro primer informe
+
+::: columns
+::: {.column width="55%"}
+![](img/quarto-create.png)
+:::
+
+::: {.column width="45%"}
+Vamos a crear el [**primer fichero rmarkdown con Quarto**]{.hl-yellow} con extensión `.qmd`. Para ello solo necesitaremos hacer click en
+
+`File << New File << Quarto Document`
+:::
+:::
+
+---
+
+## Nuestro primer informe
+
+:::: columns
+::: {.column width="45%"}
+![](img/quarto-format.png)
+:::
+
+::: {.column width="55%"}
+Tras hacerlo nos aparecerán varias [**opciones de formatos de salida**]{.hl-yellow}:
+
+-   archivo `.pdf`
+-   archivo `.html` ([**recomendable**]{.hl-yellow}): documento dinámico, permite la interacción con el usuario, como una «página web».
+-   archivo `.doc` (nada recomendable)
+:::
+::::
+
+. . .
+
+De momento dejaremos marcado el [**formato HTML que viene por defecto**]{.hl-yellow}, y escribiremos el [**título**]{.hl-yellow} de nuestro documento. Tras ello tendremos nuestro [**archivo .qmd**]{.hl-yellow} (ya no es un script .R como los que hemos abierto hasta ahora).
+
+---
+
+## Nuestro primer informe
+
+:::: columns
+::: {.column width="60%"}
+![](img/quarto-example.png)
+:::
+
+::: {.column width="40%"}
+
+Deberías tener algo similar a la captura de la imagen con [**dos modos de edición**]{.hl-yellow}: `Source` (con código, la opción recomendada hasta que lo domines) y `Visual` (más parecido a un blog)
+
+:::
+::::
+
+Para [**ejecutar TODO el documento**]{.hl-yellow} debes clickar `Render on Save` y darle a guardar.
+
+## Cabecera de un qmd
+
+![](img/quarto-prueba-html.png)
+
+Deberías haber obtenido una [**salida en html similar a esta**]{.hl-yellow} (y se te ha generado en tu ordenador un [**archivo html**]{.hl-yellow})
+
+---
+
+## Nuestro primer informe
+
+:::: columns
+::: {.column width="50%"}
+![](img/quarto-example.png)
+
+:::
+
+::: {.column width="50%"}
+
+Un fichero `.qmd` se [**divide básicamente en tres partes**]{.hl-yellow}:
+
+* [**Cabecera**]{.hl-yellow}: la parte que tienes al inicio entre `---`.
+
+* [**Texto**]{.hl-yellow}: que podremos formatear y mejorar con negritas (escrito como **negritas**, con doble astérisco al inicio y final), cursivas (_cursivas_, con barra baja al inicio y final) o destacar nombres de funciones o variables de R. Puedes añadir ecuaciones como $x^2$ (he escrito `$x^2$`, entre dólares).
+
+* [**Código R**]{.hl-yellow}
+
+:::
+::::
+
+---
+
+## Cabecera de un qmd
+
+La [**cabecera están en formato YAML**]{.hl-yellow} y contiene los [**metadatos**]{.hl-yellow} del documento:
+
+:::: columns
+::: {.column width="30%"}
+![](img/quarto-cabecera.png)
+:::
+
+::: {.column width="70%"}
+
+* `title` y `subtitle`: el título/subtítulo del documento
+* `author`: autor del mismo
+* `date`: fecha
+* `format`: formato de salida (podremos personalizar)
+  * `theme`: si tienes algún archivo de estilos
+  * `toc`: si quieres índice o no
+  * `toc-location`: posición del índice
+  * `toc-title`: título del índice
+  * `toc-depth`: profundidad del índice
+* `editor`: si estás en modo visual o source.
+
+:::
+::::
+
+---
+
+## Texto de un qmd
+
+Respecto a la escritura solo hay una [**cosa importante**]{.hl-yellow}: salvo que indiquemos lo contrario, [**TODO lo que vamos a escribir es texto (normal)**]{.hl-yellow}. No código R.
+
+:::: columns
+::: {.column width="35%"}
+![](img/quarto-prueba-qmd2.png){width=350}
+![](img/quarto-prueba-html2.png){width=320}
+:::
+
+::: {.column width="65%"}
+Vamos a empezar escribiendo una sección al inicio (`# Intro` y detrás por ej. la frase
+
+> Este material ha sido diseñado por el profesor Javier Álvarez Liébana, docente en la Universidad Complutense de Madrid
+
+Además al `Running Code` le añadiremos una almohadilla `#`: las [**almohadillas FUERA DE CHUNKS**]{.hl-yellow} nos servirán para crear [**epígrafes (secciones)**]{.hl-yellow} en el documento
+
+
+:::
+::::
+
+
+---
+
+## Índice de un qmd
+
+:::: columns
+::: {.column width="40%"}
+![](img/quarto-indice-qmd-2.png){width=370}
+![](img/quarto-indice-html2.png){width=370}
+:::
+
+::: {.column width="60%"}
+Para que el [**índice capture dichas secciones**]{.hl-yellow} modificaremos la cabecera del archivo como se observa en la imagen (puedes cambiar la localización del índice y el título si quieres para probar).
+
+:::
+::::
+
+---
+
+## Texto en un qmd
+
+Vamos a [**personalizar un poco el texto**]{.hl-yellow} haciendo lo siguiente:
+
+
+:::: columns
+::: {.column width="50%"}
+![](img/quarto-texto-mejorado-qmd.png){width=370}
+![](img/quarto-texto-mejorado-html.png){width=370}
+:::
+
+::: {.column width="50%"}
+* Vamos a añadir [**negrita al nombre**]{.hl-yellow} (poniendo ** al inicio y al final).
+
+* Vamos añadir [**cursiva**]{.hl-yellow} a la palabra material (poniendo _ al inicio y al final).
+
+* Vamos añadir un [**enlace**]{.hl-yellow} <https://www.ucm.es>, asociándolo al nombre de la Universidad. Para ello el título lo ponemos entre corchetes y justo detrás el enlace entre paréntesis `[«Universidad Complutense de Madrid»](https://www.ucm.es)`
+
+:::
+::::
+
+---
+
+## Código en un qmd
+
+Para [**añadir código R**]{.hl-yellow} debemos crear nuestras [**cajas de código llamadas chunks**]{.hl-yellow}: altos en el camino en nuestro texto markdown donde podremos incluir código de casi cualquier lenguaje (y sus salidas).
+
+&nbsp;
+
+:::: columns
+::: {.column width="50%"}
+![](img/quarto-chunk-qmd.png){width=470}
+:::
+
+::: {.column width="50%"}
+
+Para incluir uno deberá de ir [**encabezado**]{.hl-yellow} de la siguiente forma tienes un atajo `Command + Option + I` (Mac) o `Ctrl + Shift + I` (Windows)
+:::
+
+::::
+
+---
+
+## Código en un qmd
+
+Dentro de dicha cajita (que tiene ahora otro color en el documento) [**escribiremos código R**]{.hl-yellow} como lo veníamos haciendo hasta ahora en los scripts.
+
+:::: columns
+::: {.column width="50%"}
+![](img/quarto-chunk-1-qmd.png){width=410}
+![](img/quarto-chunk-1-html.png){width=410}
+:::
+
+::: {.column width="50%"}
+
+ Vamos por ejemplo a definir dos variables y su suma de la siguiente manera, escribiendo dicho código en nuestro `.qmd` (dentro de ese chunk)
+
+```{r}
+# Código R
+x <- 1
+y <- 2
+x + y
+```
+
+:::
+
+::::
+
+
+---
+
+## Etiquetando chunks
+
+
+:::: columns
+::: {.column width="50%"}
+![](img/quarto-tag-chunks-qmd.png){width=400}
+![](img/quarto-tag-chunks-html.png){width=400}
+:::
+
+::: {.column width="50%"}
+Los chunks pueden tener un [**nombre o etiqueta**]{.hl-yellow}, de forma que podamos referenciarlos de nuevo para no repetir código.
+:::
+::::
+
+
+---
+
+## Ejecutando chunks
+
+:::: columns
+::: {.column width="40%"}
+![](img/quarto-inline-qmd.png){width=400}
+![](img/quarto-inline-html.png){width=380}
+:::
+
+::: {.column width="60%"}
+En cada chunk aparecen [**dos botones**]{.hl-yellow}:
+
+* botón de [**play**]{.hl-yellow}: activa la [**ejecución y salida de ese chunk particular**]{.hl-yellow} (lo puedes visualizar dentro de tu propio `RStudio`)
+
+* botón de [**rebobinar**]{.hl-yellow}: activa la [**ejecución y salida de todos los chunk hasta ese**]{.hl-yellow} (sin llegar a él)
+
+&nbsp;
+
+Además podemos [**incluir código R dentro de la línea de texto**]{.hl-yellow} (en lugar de mostrar el texto x ejecuta el código R mostrando la variable).
+:::
+::::
+
+
+
+---
+
+## Personalización de chunks
+
+Los [**chunks podemos personalizarlos**]{.hl-yellow} con opciones al inicio del chunk precedido de `#|`:
+
+* `#| echo: false`: [**ejecuta código**]{.hl-green} y se [**muestra resultado**]{.hl-green} pero [**no visualiza código**]{.hl-red} en la salida.
+
+* `#| include: false`: [**ejecuta código**]{.hl-green} pero [**no muestra resultado**]{.hl-red} y [**no visualiza código**]{.hl-red} en la salida.
+
+* `#| eval: false`: [**no ejecuta código**]{.hl-red}, [**no muestra resultado**]{.hl-red} pero [**sí visualiza código**]{.hl-green} en la salida.
+
+* `#| message: false`: [**ejecuta código**]{.hl-green} pero [**no muestra mensajes de salida**]{.hl-red}.
+
+* `#| warning: false`: [**ejecuta código**]{.hl-green} pero [**no muestra mensajes de warning**]{.hl-red}.
+
+* `#| error: true`: [**ejecuta código**]{.hl-green} y [**permite que haya errores**]{.hl-green} mostrando el mensaje de error en la salida.
+
+
+![](img/quarto-options-chunk.png){width=380}
+
+Estas opciones podemos aplicarlas chunk a chunk o fijar los parámetros de forma global con `knitr::opts_chunk$set()` al inicio del documento (dentro de un chunk).
+
+---
+
+## Organizando qmd
+
+Además de texto y código podemos introducir lo siguiente:
+
+* [**Ecuaciones**]{.hl-yellow}: puedes añadir además ecuaciones como $x^2$ (he escrito `$x^2$`, la ecuación entre dólares).
+
+* [**Listas**]{.hl-yellow}: puedes itemizar elementos poniendo `*`
+
+`* Paso 1: ...`
+
+`* Paso 2: ...`
+
+* [**Cross-references**]{.hl-yellow}: puedes etiquetar partes del documento (la etiqueta se construye con `{#nombre-seccion}`) y llamarlas luego con `[Sección](@nombre-seccion)`
+
+---
+
+## Gráficas/imágenes en qmd
+
+:::: columns
+::: {.column width="50%"}
+![](img/quarto-fig-qmd.png){width=340}
+![](img/quarto-fig-html.png){width=390}
+:::
+
+::: {.column width="50%"}
+Por último, también podemos [**añadir pies de gráficas o imágenes**]{.hl-yellow} añadiendo `#| fig-cap: "..."`
+:::
+::::
+
+. . .
+
+:::: columns
+::: {.column width="65%"}
+Fíjate que el [**caption está en el margen**]{.hl-yellow} (por ejemplo). Puedes cambiarlo introduciendo [**ajustes en la cabecera**]{.hl-yellow} (todo lo relativo a figuras empieza por `fig-`, y puedes ver las opciones tabulando). Tienes más información en **<https://quarto.org/>**
+:::
+
+::: {.column width="35%"}
+![](img/quarto-cabecera-desplegable.png){width=400}
+:::
+::::
+
+---
+
+## Añadir estilos
+
+:::: columns
+::: {.column width="50%"}
+![](img/quarto-estilos-qmd.png){width=400}
+![](img/quarto-estilos-html.png){width=400}
+:::
+
+::: {.column width="50%"}
+Por último puedes añadir un [**tema personalizado**]{.hl-yellow} incluyendo un [**archivo de estilos**]{.hl-yellow} (archivo en formato `.scss` o `.css`). Tenéis disponible un archivo de estilos en <https://github.com/dadosdelaplace/seminario-R-biods>.
+
+::: callout-important
+## Importante
+
+El archivo de estilos debe estar en la misma carpeta que el archivo `.qmd`
+:::
+:::
+::::
+
+
+# Importar y exportar {#importar}
+
+[**Importar/exportar datos en R**]{style="color:#444442;"}
+
+---
+
+## Importar/exportar datos
+
+Hasta ahora solo hemos usado datos cargados ya en paquetes pero muchas veces [**necesitaremos importar datos de manera externa**]{.hl-yellow}. Una de las principales [**fortalezas**]{.hl-yellow} de `R` es que podemos importar datos de manera muy sencilla en distintos formatos:
+
+
+* [**Formatos nativos de R**]{.hl-yellow}: formatos `.rda`, `.RData` y `.rds`
+
+. . .
+
+* [**Datos rectangulares (tabulados)**]{.hl-yellow}: formatos `.csv` y `.tsv`
+
+. . .
+
+* [**Datos sin tabular**]{.hl-yellow}: formato `.txt`
+
+. . .
+
+* [**Datos en excel**]{.hl-yellow}: formatos `.xls` y `.xlsx`
+
+. . .
+
+* [**Datos desde SAS/Stata/SPSS**]{.hl-yellow}: formatos `.sas7bdat`, `.sav` y `.dat`
+
+. . .
+
+* [**Datos desde API**]{.hl-yellow}: Google Drive, aemet, catastro, twitter, spotify, etc
+
+
+
+---
+
+## Datos rectangulares: readr
+
+El paquete `{readr}` dentro del entorno `{tidyverse}` contiene distintas funciones útiles para la [**carga de datos rectangulares (sin formatear)**]{.hl-yellow}.
+
+:::: columns
+::: {.column width="50%"}
+
+* `read_csv()`: archivos `.csv` cuyo [**separador sea la coma**]{.hl-purple}
+* `read_csv2()`: [**punto y coma**]{.hl-purple}
+* `read_tsv()`: [**tabulador**]{.hl-purple}.
+* `read_table()`: [**espacio**]{.hl-purple}.
+* `read_delim()`: función genérica para [**archivos delimitados por caracteres**]{.hl-purple}.
+
+
+:::
+
+::: {.column width="50%"}
+
+![](img/data-import-readr.png)
+:::
+::::
+
+Todos necesitan como **argumento la ruta del archivo** amén de **otros opcionales** (saltar o no cabecera, decimales, etc). Ver más en <https://readr.tidyverse.org/>
+
+---
+
+## Datos tabulados (.csv, .tsv)
+
+La principal ventaja de `{readr}` es que [**automatiza el formateo**]{.hl-yellow} para pasar de un archivo plano (sin formato) a un tibble (en filas y columnas, con formato).
+
+. . .
+
+* Archivo `.csv`: con `read_csv()` cargaremos archivos [**separados por coma**]{.hl-purple}, pasando como [**argumento la ruta**]{.hl-yellow} en `file = ...`. Vamos a importar el dataset `chickens.csv` (sobre pollos de dibujos animados, why not). Si te fijas en la salida nos proporciona el tipo de variables.
+
+```{r}
+library(readr)
+chickens <- read_csv(file = "./datos/chickens.csv")
+chickens
+```
+
+---
+
+## Datos tabulados (.csv, .tsv)
+
+
+El [**formato de las variables**]{.hl-yellow} normalmente lo hará `read_csv()` de forma [**automática**]{.hl-yellow}, y podemos consultarlo con `spec()`
+
+```{r}
+spec(chickens)
+```
+
+---
+
+## Datos tabulados (.csv, .tsv)
+
+Aunque lo haga normalmente bien de forma automática podemos [**especificar el formato explícitamente**]{.hl-yellow} en `col_types = list()` (en formato lista, con `col_xxx()` para cada tipo de variable, por ejemplo una la pondremos como cualitativa o factor). 
+
+
+```{r}
+chickens <-
+  read_csv(file = "./datos/chickens.csv",
+           col_types = list(col_character(), col_factor(), col_double(), col_character()))
+chickens
+```
+
+---
+
+
+## Datos tabulados (.csv, .tsv)
+
+Incluso podemos indicar que [**variables que queremos seleccionar**]{.hl-yellow} (sin ocupar memoria), indicándoselo en `col_select = ...`
+
+
+```{r}
+chickens <-
+  read_csv(file = "./datos/chickens.csv",
+           col_select = c(chicken, sex, eggs_laid))
+chickens
+```
+
+
+---
+
+
+## Datos sin tabular (.txt)
+
+
+Vamos a usar de nuevo `read_csv()` con el archivo `massey-rating.txt`.
+
+```{r}
+datos_txt <- read_csv(file = "./datos/massey-rating.txt")
+as_tibble(datos_txt)
+```
+
+. . .
+
+Si te fijas nos interpreta todo como una sola columna: [**no tiene comas el archivo y no sabe por donde separar**]{.hl-yellow}
+
+. . .
+
+
+¿Qué sucede cuando el [**separador no es el correcto**]{.hl-red}?
+
+---
+
+## Datos sin tabular (.txt)
+
+Para ello tenemos
+
+* `read_csv2()` cuando el [**separador sea el punto y coma**]{.hl-yellow}, `read_tsv()` cuando el [**sea un tabulador**]{.hl-yellow} y `read_table()` cuando el [**sea un espacio**]{.hl-yellow}
+
+* `read_delim()` en general
+
+```{r}
+datos_txt <- read_table(file = "./datos/massey-rating.txt")
+as_tibble(datos_txt)
+```
+
+
+---
+
+## Datos en excel (.xls, .xlsx)
+
+Otro de los paquetes fundamentales de importación será el paquete  `{readxl}` para [**importar datos desde una Excel**]{.hl-yellow}. Tres funciones serán claves:
+
+* `read_xls()` específica para `.xls`, `read_xlsx()` específica para `.xlsx`
+* `read_excel()`: para ambas
+
+. . .
+
+Vamos a importar `deaths.xlsx` con registros de fallecimientos de famosos
+
+```{r}
+#| eval: false
+library(readxl)
+deaths <- read_xlsx(path = "./datos/deaths.xlsx")
+deaths
+```
+
+```{r}
+#| echo: false
+library(readxl)
+deaths <- read_xlsx(path = "./datos/deaths.xlsx")
+deaths |> slice(1:8)
+```
+
+---
+
+## Datos en excel (.xls, .xlsx)
+
+
+```{r}
+#| eval: false
+deaths
+```
+
+```{r}
+#| echo: false
+deaths |> slice(1:8)
+```
+
+Algo por [**desgracia muy habitual**]{.hl-yellow} es que haya [**algún tipo de comentario o texto al inicio**]{.hl-red} del archivo, teniendo que [**saltarnos dichas filas**]{.hl-yellow}.
+
+---
+
+## Datos en excel (.xls, .xlsx)
+
+Podemos [**saltarnos dichas filas**]{.hl-yellow} directamente en la carga con `skip = ...` (indicando el número de filas que nos saltamos)
+
+```{r}
+#| eval: false
+library(readxl)
+deaths <- read_xlsx(path = "./datos/deaths.xlsx", skip = 4)
+deaths
+```
+
+```{r}
+#| echo: false
+library(readxl)
+deaths <- read_xlsx(path = "./datos/deaths.xlsx", skip = 4)
+deaths |> slice(1:5)
+```
+
+---
+
+## Datos en excel (.xls, .xlsx)
+
+Además con `col_names = ...` podemos renombrar ya las columnas en la importación (si [**proporcionamos nombres asume la 1ª línea ya como un dato**]{.hl-yellow})
+
+```{r}
+#| eval: false
+#| code-line-numbers: "3"
+deaths <-
+  read_xlsx(path = "./datos/deaths.xlsx",
+            skip = 5,
+            col_names = c("name", "profession", "age", "kids", "birth", "death"))
+deaths
+```
+
+```{r}
+#| echo: false
+library(readxl)
+deaths <- read_xlsx(path = "./datos/deaths.xlsx", skip = 5,
+                    col_names = c("name", "profession", "age", "kids", "birth", "death"))
+deaths |> slice(1:7)
+```
+        
+---
+
+## Datos en excel (.xls, .xlsx)
+
+
+En ocasiones las [**fechas de Excel están mal formateadas**]{.hl-red} (sorpresa): podemos hacer uso de `convertToDate()` del paquete `{openxlsx}` para convertirlo
+
+
+```{r}
+#| eval: false
+library(openxlsx)
+deaths$death <- convertToDate(deaths$death)
+deaths
+```
+   
+```{r}
+#| echo: false
+library(openxlsx)
+deaths$death <- convertToDate(deaths$death)
+deaths |> slice(1:7)
+```
+
+---
+
+## Datos en excel (.xls, .xlsx)
+
+También podemos [**cargar un Excel con varias hojas**]{.hl-yellow}: para [**indicarle la hoja**]{.hl-yellow} (bien por su nombre bien por su número) usaremos el argumento `sheet = ...`
+
+```{r}
+#| eval: false
+mtcars <- read_xlsx(path = "./datos/datasets.xlsx", sheet = "mtcars")
+mtcars
+```
+
+
+```{r}
+#| echo: false
+mtcars <- read_xlsx(path = "./datos/datasets.xlsx", sheet = "mtcars")
+mtcars |> slice(1:5)
+```
+
+
+. . .
+ 
+Incluso podemos indicar el [**rango de celdas**]{.hl-yellow} a cargar con `range = ...`
+
+```{r}
+iris <- read_xlsx(path = "./datos/datasets.xlsx", sheet = "iris", range = "C1:E4")
+iris
+```
+
+
+
+---
+
+## Desde SAS/STATA/SPSS
+
+El paquete `{haven}` dentro de la órbita tidyverse nos permitirá [**importar archivos de los 3 software de pago más importantes**]{.hl-yellow}: SAS, SPSS y Stata
+
+```{r}
+library(haven)
+
+# SAS
+iris_sas <- read_sas(data_file = "./datos/iris.sas7bdat")
+
+# SPSS
+iris_spss <- read_sav(file = "./datos/iris.sav")
+
+# Stata
+iris_stata <- read_dta(file = "./datos/iris.dta")
+```
+
+---
+
+## Exportar
+
+De la misma manera que podemos importar también podemos [**exportar**]{.hl-yellow}
+
+* exportado en `.RData` (opción recomendada para variables guardadas en `R`). Recuerda que esta extensión [**solo se podrá usar en `R`**]{.hl-yellow}. Para ello nos basta con usar `save(objeto, file = ruta)`
+
+```{r}
+tabla <- tibble("a" = 1:4, "b" = 1:4)
+save(tabla, file = "./datos/tabla_prueba.RData")
+rm(tabla) # eliminar
+load("./datos/tabla_prueba.RData")
+tabla
+```
+
+---
+
+
+## Exportar
+
+De la misma manera que podemos importar también podemos [**exportar**]{.hl-yellow}
+
+* exportado en `.RDS` (opción recomendada para variables guardadas en `R`). Recuerda que esta extensión [**solo se podrá usar en `R`**]{.hl-yellow}. Para ello nos basta con usar `saveRDS(objeto, file = ruta)`
+
+```{r}
+saveRDS(tabla, file = "tabla.RDS") 
+```
+
+---
+
+## Exportar
+
+De la misma manera que podemos importar también podemos [**exportar**]{.hl-yellow}
+
+* exportado en `.csv`. Para ello nos basta con usar `write_csv(objeto, file = ruta)`
+
+```{r}
+write_csv(tabla, file = "./datos/tabla_prueba.csv")
+read_csv(file = "./datos/tabla_prueba.csv")
+```
+
+---
+
+## Exportar
+
+De la misma manera que podemos importar también podemos [**exportar**]{.hl-yellow}
+
+* exportado en `.xlsx`. Para ello nos basta con usar `write.xlsx(objeto, file = ruta)` del paquete `{openxlsx}`
+
+```{r}
+library(openxlsx)
+write.xlsx(tabla, file = "./datos/tabla_prueba.xlsx")
+```
+
+---
+
+## Desde web
+
+Una de las principales ventajas de `R` es que podemos hacer uso de todas las funciones anteriores de [**importar pero directamente desde una web**]{.hl-yellow}, sin necesidad de realizar la descarga manual: en lugar de pasarle la ruta local le indicaremos el [**enlace**]{.hl-yellow}. Por ejemplo, vamos a descargar los datos de covid del ISCIII (<https://cnecovid.isciii.es/covid19/#documentaci%C3%B3n-y-datos>)
+
+
+```{r}
+#| eval: false
+covid_datos <-
+  read_csv(file = "https://cnecovid.isciii.es/covid19/resources/casos_hosp_uci_def_sexo_edad_provres.csv")
+covid_datos
+```
+
+```{r}
+#| echo: false
+covid_datos <-
+  read_csv(file = "https://cnecovid.isciii.es/covid19/resources/casos_hosp_uci_def_sexo_edad_provres.csv", n_max = 700)
+covid_datos
+```
+
+---
+
+## Desde google drive
+
+Otra opción disponible (sobre todo si trabajamos con otras personas que trabajan) es [**importar desde una hoja de cálculo Google Drive**]{.hl-yellow}, haciendo uso de `read_sheet()` del paquete `{googlesheets4}`
+
+La primera vez te pedirá un permiso de tidyverse para interactuar con vuestro drive
+
+```{r}
+#| eval: false
+library(googlesheets4)
+google_sheet <-
+  read_sheet("https://docs.google.com/spreadsheets/d/1n_UTbD93-oDJR2r-rsMNff5ro147NL_ZN_vYIA2eJ3Q/edit?usp=sharing")
+google_sheet
+```
+
+---
+
+
+## 💻 Tu turno {#tu-turno-7}
+
+[**Intenta realizar los siguientes ejercicios sin mirar las soluciones**]{style="color:#444442;"}
+
+
+::: panel-tabset
+### [**Ejercicio 1**]{.hl-yellow}
+
+📝 El dataset `who` que hemos usado en ejercicios anteriores, expórtalo a un formato nativo de `R` en la carpeta `datos` del proyecto
+
+```{r}
+#| code-fold: true
+#| eval: false
+library(tidyr)
+save(who, file = "./datos/who.RData")
+```
+
+### [**Ejercicio 2**]{.hl-yellow}
+
+📝 Carga el dataset `who` pero desde la carpeta de datos (importa el archivo creado en el ejercicio anterior)
+
+```{r}
+#| code-fold: true
+#| eval: false
+load("./datos/who.RData")
+```
+
+### [**Ejercicio 3**]{.hl-yellow}
+
+📝 Repite lo mismo (exportar e importar) en 4 formatos: `.csv`, `.xlsx`, `.sav` (spss) y `.dta` (stata)
+
+```{r}
+#| code-fold: true
+#| eval: false
+
+# csv
+library(readr)
+write_csv(who, file = "./datos/who.csv")
+who_data <- read_csv(file = "./datos/who.csv")
+
+# excel
+library(openxlsx)
+write.xlsx(who, file = "./datos/who.xlsx")
+who_data <- read_xlsx(path = "./datos/who.xlsx")
+
+# sas y stata
+library(haven)
+write_sav(who, path = "./datos/who.sav")
+who_data <- read_spss(path = "./datos/who.sav")
+
+write_dta(who, path = "./datos/who.dta")
+who_data <- read_dta(path = "./datos/who.dta")
+```
+
+### [**Ejercicio 4**]{.hl-yellow}
+
+📝 Repite la carga del `who.csv` pero solo selecciona ya en la carga las 4 primeras columnas
+
+```{r}
+#| code-fold: true
+#| eval: false
+who_select <-
+  read_csv(file = "./datos/who.csv",
+           col_select = c("country", "iso2", "iso3", "year"))
+```
+
+
+:::
+
+
+
+# Introducción a listas {#listas}
+
+[**Uso de listas: paquete purrr**]{style="color:#444442;"}
+
+---
+
+
+## Introducción a listas
+
+Veamos un pequeño resumen de los datos que ya conocemos:
+
+* [**vectores**]{.hl-yellow}: colección de elementos de igual tipo. Pueden ser números, caracteres o valores lógicos, entre otros.
+
+* [**matrices**]{.hl-yellow}: colección BIDIMENSIONAL de elementos de igual tipo e igual longitud.
+
+* [**data.frame / tibble**]{.hl-yellow}: colección BIDIMENSIONAL de elementos de igual longitud pero de cualquier tipo.
+
+. . .
+
+Las [**listas**]{.hl-yellow} serán [**colecciones de variables de diferente tipo y diferente longitud**]{.hl-purple}, con estructuras totalmente heterógeneas (incluso una lista puede tener dentro a su vez otra lista).
+
+---
+
+
+## Paquete purrr
+
+Una opción más flexible y versatil que la familia `lapply` es hacer uso del paquete `{purrr}` ya cargado dentro del entorno `{tidyverse}`
+
+```{r}
+library(purrr)
+```
+
+Este paquete está pensado para imitar la [**programa funcional**]{.hl-yellow} de otros lenguajes orientados Big Data como Scala o Hadoop (de Google).
+
+![](img/purrr.png)
+
+---
+
+## Paquete purrr
+
+La función más simple de `{purrr}` es conocida como la función `map()`, encargada de [**aplicar una función a una lista de manera vectorial**]{.hl-yellow}, elemento a elemento.
+. . .
+
+Por ejemplo, con `map()` podemos [**"mapear" cada lista**]{.hl-yellow} y aplicar la función raíz cuadrada a cada elemento de la lista.
+
+```{r}
+x <- list("x1" = 1:4, "x2" = 11:20)
+map(x, sqrt) 
+```
+
+. . .
+
+
+::: callout-warning
+## Be careful
+
+Con `R` tenemos una vectorización automática cuando hablamos de vectores ya que trabaja elemento-a-elemento, pero por defecto, el [**output de `map` es una lista**]{.hl-yellow}.
+:::
+
+
+---
+
+## Paquete purrr
+
+Otro ejemplo: definamos dos distribuciones normales, con diferente $n$. ¿Cómo **calcular la media de cada una** de manera inmediata? 
+
+. . .
+
+Las guardamos en una lista y aplicamos `map()`
+
+```{r}
+x <- list(rnorm(n = 1500, mean = 0, sd = 0.7),
+          rnorm(n = 2800, mean = 2, sd = 1.5))
+map(x, mean)
+```
+
+---
+
+## Paquete purrr
+
+Lo mismo si queremos usar cualquier otra función que queramos definir nosotros mismos (por ejemplo, la media de los cuadrados)
+
+```{r}
+#| code-fold: true
+map(x, function(x) { mean(x^2) })
+```
+
+
+---
+
+## Paquete purrr
+
+Además de ser  [**más legible y eficiente**]{.hl-yellow}, con `{purrr}` podemos [**decidir el formato de salida de manera sencilla**]{.hl-yellow} 
+
+* output como [**vector double**]{.hl-purple} con `map_dbl()`
+* output como [**vector de enteros**]{.hl-purple} con `map_int()`
+* output como [**vector de caracteres**]{.hl-purple} con `map_chr()`
+* output como [**vector lógico**]{.hl-purple} con `map_lgl()`
+
+```{r}
+map_dbl(x, mean)
+map_chr(x, function(x) { glue::glue("Mean is {round(mean(x), 5)}") })
+```
+
+---
+
+## Paquete purrr
+
+```{r}
+c(x[[1]][3], x[[2]][3])
+```
+
+Además si incluyes [**como argumento un número**]{.hl-yellow} en lugar de una función, nos devolverá el [**i-ésimo elemento de la lista**]{.hl-yellow}.
+
+```{r}
+map_dbl(x, 3)
+```
+
+
+---
+
+
+## Paquete purrr
+
+También nos permite la opción de generalizarlo para funciones que necesiten  [**dos argumentos de entrada**]{.hl-yellow} (operaciones binarias) con `map2()`
+
+
+```{r}
+x <- list("a" = 1:3, "b" = 4:6)
+y <- list("c" = c(-1, 4, 0), "b" = c(5, -4, -1))
+map2(x, y, function(x, y) { x^2 + y^2})
+```
+
+---
+
+## Paquete purrr
+
+El output podemos también obtenerlo en formato `tibble` añadiendo un `list_rbind()` o `list_cbind()` para [**concatenar los valores d euna lista en formato tabular**]{.hl-yellow}.
+
+
+```{r}
+x <- c("a", "b", "c")
+y <- 1:3
+map2(x, y, function(x, y) { tibble(x, y) }) |> list_rbind()
+```
+
+---
+
+## Paquete purrr
+
+Lo anterior se puede [**generalizar**]{.hl-yellow} con `pmap_xxx()` lo que nos permite aplicar funciones con [**múltiples argumentos**]{.hl-yellow}.
+
+
+```{r}
+x <- list(1, 1, 1)
+y <- list(10, 20, 30)
+z <- list(100, 200, 300)
+pmap_dbl(list(x, y, z), sum)
+```
+
+---
+
+## Paquete purrr
+
+Dentro del paquete contamos con otro tipo de [**iteradores que no devuelven nada**] (solo side-effects) como es el caso de `walk()` (solo un argumento de entrada), `walk2()` (dos argumentos) and `pwalk()` (multiples argumentos), todos ellos [**con un return invisible**]{.hl-yellow}
+
+```{r}
+list("a" = 1:3, "b" = 4:6) |>
+  map2(list("a" = 11:13, "b" = 14:16),
+       function(x, y) { x + y }) |> 
+  walk(print)
+```
+
+---
+
+## Paquete purrr
+
+Recientemente se ha desarrollado `{loopurrr}`, un paquete que permite la traducción con `as_loop()` de lenguaje funcional en `{purrr}` a bucles para poder entender mejor lo que hace (ver más en <https://timteafan.github.io/loopurrr/>)
+
+
+```{r}
+#| eval: false
+# remotes::install_github("TimTeaFan/loopurrr")
+library(loopurrr)
+x <- list(1, c(1:2), c(1:3))
+x |>
+  map(sum) |>  
+  as_loop()
+```
+
+
+# Joins
+
+[**Cruzando datos**]{style="color:#444442;"}
+
+
+## Relacionando datos
+
+Al trabajar con datos [**no siempre tendremos la información en una sola tabla**]{.hl-yellow} y a veces nos interesará cruzar la información de distintas fuentes.
+
+. . .
+
+Para ello usaremos un clásico de todo lenguaje que maneja datos: los famosos [**join**]{.hl-yellow}, una herramienta que nos va a permitir [**cruzar una o variables tablas**]{.hl-yellow}, haciendo uso de una [**columna identificadora**]{.hl-yellow} de cada una de ellas (por ejemplo, imagina que cruzamos datos de hacienda y de antecedentes penales, haciendo _join_ por la columna `DNI`).
+
+---
+
+## Relacionando datos
+
+
+```{r}
+#| eval: false
+tabla_1 |>
+  xxx_join(tabla_2, by = id)
+```
+
+* `inner_join()`: solo sobreviven los [**registros con id en ambas**]{.hl-yellow} tablas.
+
+* `full_join()`: mantiene [**todos los registros de ambas**]{.hl-yellow} tablas.
+
+* `left_join()`: mantiene [**todos los registros de la primera tabla**]{.hl-yellow}, y busca cuales tienen id también en la segunda (en caso de [**no tenerlo se rellena con NA**]{.hl-yellow} los campos de la 2ª tabla).
+
+* `right_join()`: mantiene [**todos los registros de la segunda tabla**]{.hl-yellow}, y busca cuales tienen id también en la primera.
+
+![](img/sql-joins.jpg)
+
+
+---
+
+## Relacionando datos
+
+Vamos a probar los distintos joins con un ejemplo sencillo
+
+```{r}
+tb_1 <- tibble("key" = 1:3, "val_x" = c("x1", "x2", "x3"))
+tb_2 <- tibble("key" = c(1, 2, 4), "val_y" = c("y1", "y2", "y3"))
+```
+
+:::: columns
+::: {.column width="50%"}
+
+```{r}
+tb_1
+```
+
+:::
+
+::: {.column width="50%"}
+
+```{r}
+tb_2
+```
+
+:::
+::::
+
+---
+
+## Left join
+
+Imagina que queremos [**incorporar**]{.hl-yellow} a `tb_1` la [**información de la tabla_2**]{.hl-yellow}, identificando los registros por la columna key (indicando con `by = "key"` la columna por la que tiene que cruzar): queremos mantener todos los registros de la primera tabla y buscar cuales tienen id (mismo valor en `key`) también en la segunda tabla.
+
+:::: columns
+::: {.column width="50%"}
+
+
+```{r}
+tb_1  |> 
+  left_join(tb_2, by = "key")
+```
+
+:::
+::: {.column width="50%"}
+
+
+![](img/left_join.jpg)
+
+
+:::
+::::
+
+---
+
+## Left join
+
+```{r}
+tb_1 |> 
+  left_join(tb_2, by = "key")
+```
+
+Fíjate que los [**registros de la primera cuya key no ha encontrado en la segunda**]{.hl-yellow} les ha dado el valor de [**ausente**]{.hl-yellow}.
+
+---
+
+## Right join
+
+El `right_join()` realizará la operación contraria: vamos ahora a [**incorporar**]{.hl-yellow} a `tb_2` la [**información de la tabla_2**]{.hl-yellow}, identificando los registros por la columna key (indicando con `by = "key"` la columna por la que tiene que cruzar): queremos mantener todos los registros de la segunda y buscar cuales tienen id (mismo valor en `key`) también en la primera tabla.
+
+:::: columns
+::: {.column width="50%"}
+
+
+```{r}
+tb_1 |> 
+  right_join(tb_2, by = "key")
+```
+
+:::
+
+::: {.column width="50%"}
+
+![](img/right_join.jpg)
+
+:::
+::::
+
+
+---
+
+## Right join
+
+
+```{r}
+tb_1 |> 
+  right_join(tb_2, by = "key")
+```
+
+Fíjate que ahora los [**registros de la segunda cuya key no ha encontrado en la primera**]{.hl-yellow} son los que les ha dado el valor de [**ausente**]{.hl-yellow}.
+
+---
+
+
+## Claves y sufijos
+
+Las columnas clave que usaremos para el cruce [**no siempre se llamarán igual**]{.hl-yellow}.
+
+```{r}
+tb_1 <- tibble("key_1" = 1:3, "val_x" = c("x1", "x2", "x3"))
+tb_2 <- tibble("key_2" = c(1, 2, 4), "val_y" = c("y1", "y2", "y3"))
+```
+
+. . .
+
+* `by = c("key_2" = "key_2")`: le indicaremos en qué columna de cada tabla están las claves por las que vamos a cruzar.
+
+:::: columns
+::: {.column width="50%"}
+
+```{r}
+# Left
+tb_1 |> 
+  left_join(tb_2, by = c("key_1" = "key_2"))
+```
+
+:::
+
+
+::: {.column width="50%"}
+
+```{r}
+# Right
+tb_1  |> 
+  right_join(tb_2, by = c("key_1" = "key_2"))
+```
+
+:::
+::::
+
+---
+
+## Claves y sufijos
+
+Además podemos [**cruzar por varias columnas a la vez**]{.hl-yellow} (interpretará como igual registro aquel que tenga el conjunto de claves igual), con `by = c("var1_t1" = "var1_t2", "var2_t1" = "var2_t2", ...)`. Modifiquemos el ejemplo anterior
+
+```{r}
+tb_1 <- tibble("k_11" = 1:3, "k_12" = c("a", "b", "c"),  "val_x" = c("x1", "x2", "x3"))
+tb_2 <- tibble("k_21" = c(1, 2, 4), "k_22" = c("a", "b", "e"), "val_y" = c("y1", "y2", "y3"))
+```
+
+. . .
+
+```{r}
+# Left
+tb_1 |> 
+  left_join(tb_2,
+            by = c("k_11" = "k_21", "k_12" = "k_22"))
+```
+
+
+---
+
+## Claves y sufijos
+
+También podría suceder que al cruzar dos tablas, haya [**columnas de valores que se llamen igual**]{.hl-yellow}
+
+
+```{r}
+tb_1 <- tibble("key_1" = 1:3, "val" = c("x1", "x2", "x3"))
+tb_2 <- tibble("key_2" = c(1, 2, 4), "val" = c("y1", "y2", "y3"))
+```
+
+. . .
+
+```{r}
+# Left
+tb_1 |> 
+  left_join(tb_2, by = c("key_1" = "key_2"))
+```
+
+Fíjate que [**por defecto nos añade los sufijos**]{.hl-yellow} `.x` y `.y` para indicarnos de que tabla vienen.
+
+---
+
+## Claves y sufijos
+
+
+Dicho [**sufijo podemos especificárselo**]{.hl-yellow} en el argumento opcional `suffix = ...`, que nos permita [**distinguir las variables**]{.hl-yellow} de una tabla y de otra.
+
+
+```{r}
+# Left
+tb_1 |>
+  left_join(tb_2, by = c("key_1" = "key_2"), suffix = c("_tabla1", "_tabla2"))
+```
+
+
+---
+
+## Full join
+
+Los dos anteriores casos forman lo que se conoce como [**outer joins**]{.hl-yellow}: cruces donde se mantienen observaciones que salgan en al menos una tabla. El tercer outer join es el conocido como `full_join()` que nos [**mantendrá las observaciones de ambas**]{.hl-yellow} tablas, [**añadiendo las filas**]{.hl-yellow} que no casen con la otra tabla.
+
+:::: columns
+::: {.column width="50%"}
+
+
+```{r}
+tb_1 |> 
+  full_join(tb_2, by = c("key_1" = "key_2"))
+```
+
+:::
+
+
+::: {.column width="50%"}
+
+![](img/full_join.jpg)
+
+:::
+::::
+
+
+---
+
+## Inner join
+
+Frente a los outer join está lo que se conoce como [**inner join**]{.hl-yellow}, con `inner_join()`: un cruce en el que solo se mantienen las [**observaciones que salgan en ambas tablas**]{.hl-yellow}, solo mantiene aquellos registros matcheados.
+
+:::: columns
+::: {.column width="50%"}
+
+
+```{r}
+tb_1 |> 
+  inner_join(tb_2, by = c("key_1" = "key_2"))
+```
+
+:::
+
+
+::: {.column width="50%"}
+
+![](img/inner_join.png)
+
+
+:::
+::::
+
+---
+
+## Inner join
+
+Fíjate que en términos de registros, `inner_join` si es conmutativa, **nos da igual el orden de las tablas**: lo único que cambia es el orden de las columnas que añade.
+
+:::: columns
+::: {.column width="50%"}
+
+
+```{r}
+tb_1 |> 
+  inner_join(tb_2, by = c("key_1" = "key_2"))
+```
+
+:::
+
+::: {.column width="50%"}
+
+
+```{r}
+tb_2 |> 
+  inner_join(tb_1, by = c("key_2" = "key_1"))
+```
+
+:::
+::::
+
+---
+
+## Anti/semi join
+
+Por último tenemos dos herramientas interesantes para [**filtrar (no cruzar) registros**]{.hl-yellow}: `semi_join()` y `anti_join()`. El [**semi join**]{.hl-yellow} nos deja en la [**primera tabla los registros que cuya clave está también en la segunda**]{.hl-yellow} (como un inner join pero sin añadir la info de la segunda tabla). Y el segundo, los anti join, hace justo lo contrario (aquellos que no están).
+
+
+:::: columns
+::: {.column width="50%"}
+
+```{r}
+# semijoin
+tb_1 |> 
+  semi_join(tb_2, by = c("key_1" = "key_2"))
+```
+
+:::
+
+::: {.column width="50%"}
+
+```{r}
+# antijoin
+tb_1 |> 
+  anti_join(tb_2, by = c("key_1" = "key_2"))
+```
+
+:::
+::::
+
+
+---
+
+
+## 💻 Tu turno {#tu-turno-16}
+
+[**Intenta realizar los siguientes ejercicios sin mirar las soluciones**]{style="color:#444442;"}
+
+Para los ejercicios usaremos las tablas disponibles en el paquete `{nycflights13}` (echa un vistazo antes)
+
+```{r}
+library(nycflights13)
+```
+
+* [**airlines**]{.hl-yellow}: nombre de aerolíneas (con su abreviatura).
+* [**airports**]{.hl-yellow}: datos de aeropuertos (nombres, longitud, latitud, altitud, etc).
+* [**flights**]{.hl-yellow}: datos de vuelos.
+* [**planes**]{.hl-yellow}: datos de los aviones.
+* [**weather**]{.hl-yellow}: datos meteorológicos horarios de las estaciones LGA, JFK y EWR.
+
+---
+
+## 💻 Tu turno {#tu-turno-16}
+
+[**Intenta realizar los siguientes ejercicios sin mirar las soluciones**]{style="color:#444442;"}
+
+
+::: panel-tabset
+
+### [**Ejercicio 1**]{.hl-yellow}
+
+📝 Del paquete `{nycflights13}` cruza la tabla `flights` con `airlines`. Queremos mantener todos los registros de vuelos, añadiendo la información de las aerolíneas a la tabla de aviones.
+
+```{r}
+#| eval: false
+#| code-fold: true
+flights_airlines <-
+  flights |> 
+  left_join(airlines, by = "carrier")
+flights_airlines
+```
+
+### [**Ejercicio 2**]{.hl-yellow}
+
+📝 A la tabla obtenida del cruce del apartado anterior, cruza después con los datos de los aviones en `planes`, pero incluyendo solo aquellos vuelos de los que tengamos información de sus aviones (y viceversa). 
+
+
+```{r}
+#| eval: false
+#| code-fold: true
+flights_airlines_planes <- 
+  flights_airlines |> 
+  inner_join(planes, by = "tailnum")
+flights_airlines_planes
+```
+
+
+### [**Ejercicio 3**]{.hl-yellow}
+
+📝 Repite el ejercicio anterior pero conservando ambas variables `year` (en una es el año del vuelo, en la otra es el año de construcción del avión), y distinguiéndolas entre sí
+
+
+
+```{r}
+#| eval: false
+#| code-fold: true
+flights_airlines_planes <- 
+  flights_airlines |> 
+  inner_join(planes, by = "tailnum",
+             suffix = c("_flight", "_build_aircraft"))
+flights_airlines_planes
+```
+
+### [**Ejercicio 4**]{.hl-yellow}
+
+📝 Al cruce obtenido del ejercicio anterior incluye la longitud y latitud de los aeropuertos en `airports`, distinguiendo entre la latitud/longitud del aeropuerto en destino y en origen.
+
+```{r}
+#| eval: false
+#| code-fold: true
+flights_airlines_planes %>%
+  left_join(airports %>% select(faa, lat, lon),
+            by = c("origin" = "faa")) |> 
+  rename(lat_origin = lat, lon_origin = lon) |> 
+  left_join(airports %>% select(faa, lat, lon),
+            by = c("dest" = "faa")) |> 
+  rename(lat_dest = lat, lon_dest = lon)
+```
+
+### [**Ejercicio 5**]{.hl-yellow}
+
+📝 Filtra de `airports` solo aquellos aeropuertos de los que salgan vuelos. Repite el proceso filtrado solo aquellos a los que lleguen vuelos
+
+```{r}
+#| eval: false
+#| code-fold: true
+airports |> 
+  semi_join(flights, by = c("faa" = "origin"))
+airports |> 
+  semi_join(flights, by = c("faa" = "dest"))
+```
+
+
+### [**Ejercicio 6**]{.hl-yellow}
+
+📝 ¿De cuántos vuelos no disponemos información del avión? Elimina antes los vuelos que no tengan identificar (diferente a NA) del avión
+
+
+```{r}
+#| eval: false
+#| code-fold: true
+flights |> 
+  drop_na(tailnum) |>
+  anti_join(planes, by = "tailnum") |>
+  count(tailnum, sort = TRUE) # de mayor a menor ya de paso
+```
+
+:::
+
+# Factores
+
+[**Trabajando con variables cualitativas**]{style="color:#444442;"}
+
+---
+
+
+## Factores
+
+En el caso de las [**variables cualitativas**]{.hl-yellow}, llamaremos  **niveles o modalidades** a los **diferentes valores** que pueden tomar estos datos. Por ejemplo, en el caso de la variable `sex` del conjunto `starwars`, tenemos 4 niveles permitidos: `female`, `hermaphroditic`, `male` y `none` (amén de datos ausentes).
+
+```{r}
+starwars |> count(sex)
+```
+
+
+---
+
+## Factores
+
+Este tipo de variables se conocen en `R` como [**factores**]{.hl-yellow}. Y el paquete fundamental para tratarlos es `{forcats}` (del entorno `{tidyverse}`). 
+
+
+![](./img/factors.jpg)
+
+---
+
+## Factores
+
+Este paquete nos permite fijar los [**niveles**]{.hl-yellow} (guardados internamente como `levels`) que toma una determinada variable categórica, dándoles un [**tratamiento diferente a las cadena de texto normales**]{.hl-yellow}.
+
+. . .
+
+Veamos un ejempo sencillo definiendo una variable `estado` que tome los valores `"sano"`, `"leve"` y `"grave"` de la siguiente manera.
+
+```{r}
+estado <-
+  c("leve", "grave", "sano", "sano", "leve", "sano", "sano", "grave",
+    "grave", "leve", "grave", "sano", "sano")
+estado
+```
+
+La variable `estado` actualmente es de [**tipo texto**]{.hl-yellow}, de tipo `chr`, algo que podemos comprobar con `class(estado)`.
+
+```{r}
+class(estado)
+```
+
+---
+
+## Factores
+
+Desde un punto de vista estadístico y computacional, para `R` esta variable ahora mismo sería equivalente una variable de nombres. Pero estadísticamente [**no es lo mismo una variable con nombres**]{.hl-yellow} (que identifican muchas veces el registro) que una variable categórica como estado que [**solo puede tomar esos 3 niveles**]{.hl-yellow}. ¿Cómo [**convertir a factor**]{.hl-yellow}?
+
+. . .
+
+Haciendo uso de la función `as_factor()` del paquete `{forcats}`.
+
+```{r}
+library(tidyverse)
+estado_fct <- tibble(paciente = 1:length(estado),
+                     estado = as_factor(estado))
+estado_fct
+```
+
+---
+
+## Factores
+
+
+No solo ha cambiado la clase de la variable sino que ahora, debajo del valor guardado, nos aparece la frase `Levels: grave leve sano`: son las [**modalidades o niveles**]{.hl-yellow} de nuestra cualitativa. 
+
+&nbsp;
+
+Imagina que ese día en el hospital no tuviésemos a **nadie en estado grave**: aunque ese día nuestra variable no tome dicho valor, el estado `grave` es un [**nivel permitido en la base de datos**]{.hl-yellow}, así que aunque lo eliminemos, por ser un factor, el nivel permanece (no lo tenemos ahora pero es un nivel permitido).
+
+
+```{r}
+estado_fct |> 
+  filter(estado %in% c("sano", "leve")) |> 
+  pull(estado)
+```
+
+---
+
+## Factores
+
+
+Con `factor()` podemos [**especificar explícitamente**]{.hl-yellow} los nombres de las modalidades, incluso si son nominales u [**ordinales**]{.hl-yellow}
+
+```{r}
+estado_fct <-
+  tibble(paciente = 1:length(estado),
+         estado = factor(estado, ordered = TRUE))
+estado_fct |> pull(estado)
+```
+
+---
+
+## Factores
+
+
+Con  `levels = ...` podemos indicarle explícitamente el [**orden de las modalidades**]{.hl-yellow}
+
+```{r}
+estado_fct <-
+  tibble(paciente = 1:length(estado),
+         estado = factor(estado,
+                         levels = c("sano", "leve", "grave"),
+                         ordered = TRUE))
+estado_fct |> pull(estado)
+```
+
+
+
+---
+
+## Factores
+
+
+:::: columns
+
+::: {.column width="50%"}
+
+Si queremos indicarle que [**elimine un nivel no usado**]{.hl-yellow} en ese momento (y que queremos excluir de la definición) podemos hacerlo con `fct_drop()`
+
+:::
+
+
+::: {.column width="50%"}
+
+![](img/drop_factor.jpg)
+
+:::
+::::
+
+```{r}
+estado_fct |> 
+  filter(estado %in% c("sano", "leve")) |> 
+  mutate(estado = fct_drop(estado)) |> 
+  pull(estado)
+```
+
+---
+
+## Factores
+
+:::: columns
+
+::: {.column width="50%"}
+
+Al igual que podemos eliminar niveles podemos [**ampliar los niveles existentes**]{.hl-yellow} (aunque no existan datos de ese nivel en ese momento) con `fct_expand()`
+
+:::
+
+::: {.column width="50%"}
+
+![](./img/factor_expand.jpg)
+
+:::
+::::
+
+```{r}
+estado_fct |> 
+  mutate(estado = fct_expand(estado, c("UCI", "fallecido"))) |> 
+  pull(estado)
+```
+
+---
+
+## Factores
+
+:::: columns
+
+::: {.column width="50%"}
+
+Además con `fct_explicit_na()` podemos [**asignar un nivel a los valores**]{.hl-yellow} para que sea incluido dicho nivel en los análisis y visualizaciones.
+
+:::
+
+::: {.column width="50%"}
+
+![](./img/factor_explicit.jpg)
+
+:::
+::::
+
+```{r}
+fct_explicit_na(factor(c("a", "b", NA)))
+```
+
+---
+
+## Factores
+
+
+Incluso una vez definidos podemos [**reordenar los níveles**]{.hl-yellow} con `fct_relevel()`
+
+
+```{r}
+estado_fct_expand <- 
+  estado_fct |> 
+  mutate(estado = fct_expand(estado, c("UCI", "fallecido"))) |> 
+  pull(estado)
+
+estado_fct_expand |>
+  fct_relevel(c("fallecido", "leve", "sano", "grave", "UCI"))
+  
+```
+
+
+---
+
+## Factores
+
+:::: columns
+
+::: {.column width="50%"}
+
+Esta forma de trabajar con variables cualitativas nos permite dar una [**definición teórica**]{.hl-yellow} de nuestra base de datos, pudiendo incluso contar valores que aún no existen (pero que podrían), haciendo uso de `fct_count()`
+
+:::
+
+::: {.column width="50%"}
+
+![](./img/fct_count.jpg)
+
+:::
+::::
+
+```{r}
+estado_fct |> 
+  mutate(estado = fct_expand(estado, c("UCI", "fallecido"))) |> 
+  pull(estado) |> 
+  fct_count()
+```
+
+
+---
+
+## Factores
+
+
+Los níveles también podemos [**ordenarlos por frecuencia**]{.hl-yellow} con `fct_infreq()`
+
+```{r}
+estado_fct |> 
+  mutate(estado = fct_infreq(estado)) |> 
+  pull(estado) |> 
+  fct_count()
+```
+
+---
+
+## Factores
+
+
+A veces querremos [**agrupar niveles**]{.hl-yellow}, por ejemplo, no permitiendo niveles que [**no sucedan un mínimo de veces**]{.hl-yellow} con `fct_lump_min(.., min = ..)` (las observaciones que no lo cumplan irán a un **nivel genérico** llamado `Other`, aunque se puede cambiar con el argumento `other_level`). 
+
+:::: columns
+
+::: {.column width="50%"}
+
+
+```{r}
+estado_fct |> 
+  pull(estado) |> 
+  fct_lump_min(min = 4)
+```
+
+:::
+
+::: {.column width="50%"}
+
+
+```{r}
+estado_fct |> 
+  pull(estado) |> 
+  fct_lump_min(min = 4,
+               other_level = "otros")
+```
+
+:::
+::::
+
+---
+
+## Factores
+
+
+Podemos hacer algo equivalente pero en función de su [**frecuencia relativa**]{.hl-yellow} con `fct_lump_prop()`.
+
+
+```{r}
+estado_fct |> 
+  pull(estado) |> 
+  fct_lump_prop(prop = 0.4,
+                other_level = "otros")
+```
+
+---
+
+
+## Factores
+
+Esto lo podemos aplicar a nuestros conjuntos de datos para [**recategorizar variables**]{.hl-yellow} de forma muy rápida.
+
+```{r}
+starwars |> 
+  drop_na(species) |> 
+  mutate(species =
+           fct_lump_min(species, min = 3,
+                        other_level = "Otras")) |> 
+  count(species)
+```
+
+---
+
+## Factores
+
+Con `fct_reorder()` podemos también indicar que queremos [**ordenar los factores**]{.hl-yellow} en función de una función aplicada a otra variable.
+
+
+```{r}
+starwars_factor <- 
+  starwars |> 
+  drop_na(height, species) |> 
+  mutate(species =
+           fct_lump_min(species, min = 3,
+                        other_level = "Otras"))
+```
+
+:::: columns
+
+::: {.column width="50%"}
+
+```{r}
+starwars_factor |> pull(species)
+```
+
+:::
+
+
+
+::: {.column width="50%"}
+
+```{r}
+starwars_factor |>
+  mutate(species = fct_reorder(species, height, mean)) |> 
+  pull(species)
+```
+
+:::
+::::
+
+---
+
+## 💻 Tu turno {#tu-turno-14}
+
+[**Intenta realizar los siguientes ejercicios sin mirar las soluciones**]{style="color:#444442;"}
+
+::: panel-tabset
+
+### [**Ejercicio 1**]{.hl-yellow}
+
+📝 Dada la variable `meses` definida debajo (definida como un vector de caracteres), convierte dicha variable a factor (solo eso)
+
+```{r}
+meses <- c("Ene", "Feb", "Mar", "Abr")
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+meses <- c("Ene", "Feb", "Mar", "Abr")
+meses_fct <- as_factor(meses)
+meses_fct
+```
+  
+### [**Ejercicio 2**]{.hl-yellow}
+
+📝 Dada la variable `meses` definida debajo convierte dicha variable a factor pero indicando los niveles de forma correcta.
+
+```{r}
+meses <- c(NA, "Abr", "Ene", "Oct", "Jul", "Ene", "Sep", NA, "Feb", "Dic",
+           "Jul", "Mar", "Ene", "Mar", "Feb", "Abr", "May", "Oct", "Sep",  NA,
+           "Dic", "Jul", "Nov", "Feb", "Oct", "Jun", "Sep", "Oct", "Oct", "Sep")
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+meses <- c(NA, "Abr", "Ene", "Oct", "Jul", "Ene", "Sep", NA, "Feb", "Dic",
+           "Jul", "Mar", "Ene", "Mar", "Feb", "Abr", "May", "Oct", "Sep",  NA,
+           "Dic", "Jul", "Nov", "Feb", "Oct", "Jun", "Sep", "Oct", "Oct", "Sep")
+
+# Orden de niveles correcto e incluimos agosto aunque no haya
+meses_fct <-
+  factor(meses,
+         levels = c("Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"))
+meses_fct
+```
+
+### [**Ejercicio 3**]{.hl-yellow}
+
+📝 Cuenta cuantos valores hay de cada mes pero teniendo en cuenta que son factores (quizás haya niveles sin ser usados y de los que debería obtener un 0).
+
+```{r}
+#| eval: false
+#| code-fold: true
+meses_fct |> fct_count()
+```
+
+### [**Ejercicio 4**]{.hl-yellow}
+
+📝 Dado que hay ausentes, indica que los ausentes sea un decimotercer nivel etiquetado como "ausente".
+
+```{r}
+#| eval: false
+#| code-fold: true
+meses_fct <- 
+  meses_fct |>
+  fct_explicit_na(na_level = "ausente")
+meses_fct
+```
+
+### [**Ejercicio 5**]{.hl-yellow}
+
+📝 Elimina los niveles no usados.
+
+```{r}
+#| eval: false
+#| code-fold: true
+meses_fct <- 
+  meses_fct |>
+  fct_drop()
+meses_fct
+```
+
+### [**Ejercicio 6**]{.hl-yellow}
+
+📝 Ordena los niveles por frecuencia de aparición.
+  
+```{r}
+#| eval: false
+#| code-fold: true
+meses_fct |> 
+  fct_infreq()
+```
+
+
+### [**Ejercicio 7**]{.hl-yellow}
+
+📝 Agrupa niveles de forma que todo nivel que no aparezca al menos el 7% de las veces se agrupe en un nivel llamado "otros meses"
+
+```{r}
+#| eval: false
+#| code-fold: true
+meses_fct <-
+  meses_fct |> 
+  fct_lump_prop(prop = 0.07, other_level = "otros")
+meses_fct
+```
+
+:::
+
+
+# El mundo Github
+
+[**Trabajar ordenados, publicar resultados, replicabilidad de lo realizado**]{style="color:#444442;"}
+
+---
+
+## ¿Qué es Github?
+
+[**GitHub**]{.hl-yellow} es la plataforma colaborativa más conocida basada en el [**sistema de control de versiones Git**]{.hl-yellow}
+
+. . .
+
+-   [**¿Qué es Git?**]{.hl-purple} Git es un sistema de [**control de versiones**]{.hl-yellow}: una especie de [**Dropbox**]{.hl-yellow} para facilitar la [**programación colaborativa**]{.hl-yellow} entre un grupo de personas, permitiendo llevar la [**trazabilidad de los cambios**]{.hl-yellow} realizados.
+
+. . .
+
+-   [**¿Qué es Github?**]{.hl-purple} Nuestra [**plataforma/interfaz**]{.hl-yellow} para ejecutar el control de versiones: nos servirá no solo para trabajar colaborativamente sino para [**hacer transparente**]{.hl-yellow} el proceso de construcción de nuestros proyectos de código.
+
+. . .
+
+::: callout-important
+## Importante
+
+Desde el 4 de junio de 2018 Github es de Microsoft (ergo el código que subas también)
+:::
+
+---
+
+## Visión general
+
+Tras hacernos una cuenta en Github, [**arriba a la derecha**]{.hl-purple} tendremos un círculo, y haciendo click en [**Your Profile**]{.hl-purple}, veremos algo similar a esto
+
+::: columns
+::: {.column width="55%"}
+![](img/github_1.png)
+:::
+
+::: {.column width="45%"}
+-   [**Edit profile**]{.hl-purple}: nos permite añadir una [**descripción y foto de perfil**]{.hl-yellow}.
+
+-   [**Overview**]{.hl-purple}: en ese panel de cuadrados se [**visualizará nuestra actividad**]{.hl-yellow} a lo largo del tiempo.
+
+-   [**Repositories**]{.hl-purple}: el códugo será subido a [**repositorios**]{.hl-yellow}, el equivalente a nuestras carpetas compartidas en Dropbox.
+:::
+:::
+
+---
+
+## Primer uso: consumidor
+
+Antes de aprender como crear repositorios, Github también nos servirá para
+
+-   [**Acceder a código**]{.hl-purple} ajeno
+-   [**Proponer mejoras**]{.hl-purple} a otros usuarios, e incluso proponer [**correcciones de error que detectemos**]{.hl-yellow} de software que usemos
+
+. . .
+
+-   [**Instalar paquetes de R**]{.hl-purple}. En muchas ocasiones los desarrolladores de paquetes suben las actualizaciones a CRAN cada cierto tiempo, y en otras el software no es suficientemente «amplio» para poder ser subido como paquete.
+
+El código de paquetes que no tengamos subido en CRAN podremos [**instalarlo como código desde Github**]{.hl-yellow}
+
+---
+
+## Instalar desde Github
+
+Por ejemplo, vamos a instalar un paquete llamado [`{peRReo}`](https://github.com/jbgb13/peRReo), cuya única función es darnos [**paletas de colores**]{.hl-yellow} basadas en portadas de [**álbumes de música urbana**]{.hl-yellow}
+
+::: columns
+::: {.column width="50%"}
+![](img/perrreo.png)
+:::
+
+::: {.column width="50%"}
+![](img/rosalia.png){width="360"}
+:::
+:::
+
+. . .
+
+Para ello antes tendremos que instalar un [**conjunto de paquetes para desarrolladores**]{.hl-yellow} llamado `{devtools}`, que nos permitirá la instalación desde Github
+
+```{r}
+#| eval: false
+install.packages("devtools")
+```
+
+---
+
+## Instalar desde Github
+
+Las [**instrucciones de instalación**]{.hl-yellow} suelen venir detalladas en la portada del repositorio
+
+::: columns
+::: {.column width="50%"}
+![](img/install_perreo.png)
+:::
+
+::: {.column width="50%"}
+![](img/rosalia.png){width="310"}
+:::
+:::
+
+. . .
+
+En la mayoría de casos bastará con la función `install_github()` (del paquete que acabamos de instalar), pasándole como argumento la [**ruta del repositorio**]{.hl-yellow} (sin "github.com/").
+
+```{r}
+#| eval: false
+devtools::install_github("jbgb13/peRReo")
+```
+
+Ya puedes perrear con ggplot ;)
+
+---
+
+## Descargar desde Github
+
+La mayoría de veces lo que subamos no será un paquete de R como tal sino que [**subiremos un código más o menos organizado**]{.hl-yellow} y comentado. En ese caso podremos [**descargar el repo entero**]{.hl-yellow} haciendo click [**Code**]{.hl-green} y luego Download ZIP.
+
+Por ejemplo, vamos a descargarnos los scripts de dataviz que han subido desde el [Centre d'Estudis d'Opinió](https://github.com/ceopinio/bop-grafics)
+
+![](img/ceo_github.png)
+
+---
+
+## Ideal
+
+![](img/abogados_simpson.jpeg){width="600"}
+
+[**¿Lo ideal?**]{.hl-purple} Tener dos tipos de repositorios
+
+-   Una [**colección de repositorios públicos (producción)**]{.hl-yellow} donde hacer transparente el código y los datos ([**ya validados**]{.hl-purple}), coordinado por un nº reducido de personas.
+
+-   Una [**colección de repositorios privados (desarrollo)**]{.hl-yellow} donde esté todo el equipo colaborando y donde se haga el [**trabajo del día**]{.hl-purple}, con trazabilidad interna.
+
+---
+
+## Nuestro primer repositorio
+
+Vamos a [**crear nuestro primero repositorio**]{.hl-yellow} que servirá además como [**carta de presentación**]{.hl-yellow} de nuestro perfil en Github.
+
+1.  [**Repositories**]{.hl-purple}: hacemos click en las pestaña de Repositories.
+
+2.  [**New**]{.hl-purple}: hacemos click en el [**botón verde New**]{.hl-green} para crear un nuevo repositorio
+
+![](img/new_repo.png)
+
+---
+
+## Nuestro primer repositorio
+
+-   [**Repository name**]{.hl-purple}: el [**nombre del repositorio**]{.hl-yellow}. En este caso vamos a crear un repositorio muy concreto: el nombre debe [**coincidir exactamente con tu nombre de usuario**]{.hl-yellow}
+
+-   [**Description**]{.hl-purple}: descripción de tu repositorio. En este caso será un repo de presentación.
+
+![](img/repo_init_1.png)
+
+---
+
+## Nuestro primer repositorio
+
+-   [**Public vs private**]{.hl-purple}: con cada repositorio tendremos la opción de hacer el repositorio
+
+    -   [**público**]{.hl-purple}: todos los usuarios podrán ver el código así cómo la trazabilidad de su desarrollo (qué se añade y cuándo). Es para mí la opción más recomendable cuando quieres darle [**visibilidad y transparencia**]{.hl-yellow} a tu trabajo
+    -   [**privado**]{.hl-purple}: solo tendrán acceso al repositorio aquellos usuarios a los que se lo permitas. No se podrá visualizar ni instalar nada de él fuera de Github.
+
+![](img/repo_init_2.png)
+
+En este caso concreto, dado que será un repositorio de presentación, lo [**haremos público**]{.hl-yellow}.
+
+---
+
+## Nuestro primer repositorio
+
+-   [**Add a README file**]{.hl-purple}: un README file será el archivo donde incluiremos las [**instrucciones y detalles de uso**]{.hl-yellow} a los demás (en el caso de `{peRReo}` era el archivo que contenía los detalles de instalación)
+
+![](img/repo_init_3.png)
+
+De momento [**ignoraremos los demás campos**]{.hl-red} para este primer repositorio.
+
+---
+
+## Nuestro primer repositorio
+
+![](img/repo_init_1.png)
+
+Por defecto Github asume que este repositorio, con el [**mismo nombre que nuestro usuario**]{.hl-yellow} será el repositorio que querremos que se presente de inicio cuando alguien entra en nuestro perfil, y será el repositorio donde \[**incluir en el README.md**\] una presentación de nosotros y un índice de tu trabajo (si quieres).
+
+---
+
+## Nuestro primer repositorio
+
+![](img/profile_github_md.png)
+
+Fíjate que ahora en nuestra [**portada tenemos dicho README.md**]{.hl-yellow} que podemos personalizar a nuestro gusto haciendo uso de [**html y markdown**]{.hl-yellow}.
+
+Aquí puedes ver [**algunos ejemplos de README.MD**](https://github.com/matiassingers/awesome-readme)
+
+---
+
+## Repo de código
+
+Una vez que tenemos nuestro README de presentación (recuerda que puedes [**personalizar a tu gusto con html y markdown**]{.hl-yellow}) vamos a crear un [**repositorio de código**]{.hl-yellow}.
+
+. . .
+
+Si ya era importante [**trabajar con proyectos**]{.hl-yellow} en `RStudio`, cuando lo combinamos con Github es aún más crucial que creemos un proyecto antes de subir el código, así que vamos a crear uno de prueba que se llame `repo-github-1`.
+
+. . .
+
+En dicho proyecto vamos a [**crear un script**]{.hl-yellow} (en mi caso llamado **codigo.R**) en el que deberás hacer los siguientes pasos:
+
+---
+
+## Repo de código
+
+1.  [**Carga**]{.hl-yellow} directamente desde la página del [ISCIII](https://cnecovid.isciii.es/covid19/resources) el archivo llamado `casos_hosp_uci_def_sexo_edad_provres.csv`
+
+```{r}
+#| eval: false
+#| code-fold: true
+# Carga de datos desde ISCIII
+datos_covid <- read_csv(file = "https://cnecovid.isciii.es/covid19/resources/casos_hosp_uci_def_sexo_edad_provres.csv")
+```
+
+. . .
+
+2.  [**Filtra**]{.hl-yellow} datos de Madrid (`"M"`), de 2020 y con sexo conocido (hombre/mujer). Tras ello quédate con las columnas `fecha`, `sexo`, `grupo_edad`, `num_casos` (ese orden). Por último obtén la suma de casos diarios por fecha y sexo.
+
+```{r}
+#| eval: false
+#| code-fold: true
+# Depuración
+datos_madrid <-
+  datos_covid |>
+  # Filtrado por Madrid y fecha
+  filter(provincia_iso == "M" & fecha <= "2020-12-31" & sexo != "NC") |> 
+  # Selección de columnas
+  select(provincia_iso:fecha, num_casos) |> 
+  # Resumen de casos diarios por fecha y sexo
+  summarise(num_casos = sum(num_casos), .by = c(fecha, sexo))
+  
+```
+
+---
+
+## Repo de código
+
+3.  [**Exporta el dataset a un csv**]{.hl-yellow} en una carpeta que se llame `exportado`
+
+```{r}
+#| eval: false
+#| code-fold: true
+# Exportamos datos
+write_csv(datos_madrid, file = "./exportado/datos_madrid.csv")
+```
+
+. . .
+
+::: columns
+::: {.column width="40%"}
+4.  Crea una [**gráfica de líneas**]{.hl-yellow} que tenga en el eje x fecha, en el eje y casos, con una curva por sexo (gráficas separadas).
+
+```{r}
+#| eval: false
+#| code-fold: true
+# Gráfica
+ggplot(datos_madrid) +
+  geom_line(aes(x = fecha, y = num_casos, color = sexo),
+            alpha = 0.6, linewidth = 0.7) +
+  scale_color_manual(values = c("#85519D", "#278862")) +
+  facet_wrap(~sexo) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+:::
+
+::: {.column width="60%"}
+![](./img/ggplot.png){width="380"}
+:::
+:::
+
+. . .
+
+5.  Tras ello [**exportamos la gráfica**]{.hl-yellow}
+
+```{r}
+#| eval: false
+ggsave(filename = "./exportado/ggplot.png", plot = last_plot(),
+       bg = "white", width = 12, height = 8)
+```
+
+---
+
+## Repo de código
+
+¿Cómo [**subimos el proyecto**]{.hl-yellow}? Vamos de nuevo a [**crear un proyecto de cero**]{.hl-yellow}. Antes no hemos hablado de dos campos importantes:
+
+::: columns
+::: {.column width="50%"}
+![](./img/repo-1.png){width="460"}
+:::
+
+::: {.column width="50%"}
+-   `Add .gitignore` nos permitirá [**seleccionar el lenguaje**]{.hl-yellow} en el que estará nuestro proyecto para que Github lo entienda al sincronizar (y no actualice cosas que no deba).
+
+-   `Choose a license` nos permitirá [**seleccionar la licencia**]{.hl-yellow} que determinará las condiciones en las que otros podrán reusar tu código.
+:::
+:::
+
+---
+
+## Repo de código
+
+::: columns
+::: {.column width="50%"}
+![](./img/repo-1-1.png)
+:::
+
+::: {.column width="50%"}
+Si te fijas traer crearlo tenemos solo 3 archivos: el de licencia, el .gitignore y el readme.md (donde deberíamos escribir una guía de uso de lo que hayamos subido)
+:::
+:::
+
+Para subir los archivos vamos a clickar en [**Add file \< Upload File**]{.hl-purple} y [**arrastraremos TODOS los archivos**]{.hl-yellow} de la carpeta de nuestro proyecto.
+
+---
+
+## Repo de código
+
+Tras la subida de archivos tendremos un cuadro llamado [**Commit changes**]{.hl-purple}
+
+![](./img/commit-1.png)
+
+Un [**commit**]{.hl-purple} es una [**modificación del repositorio**]{.hl-yellow} con algo que se añade/elimine/modifique, y dicho cuadro es recomendable usarlo para [**resumir en qué consiste la modificación**]{.hl-yellow}, de manera que quede trazado el cambio.
+
+---
+
+## Repo de código
+
+Haciendo click en el reloj donde indica el [**número de commits**]{.hl-yellow} accedemos al [**histórico de commits (cambios)**]{.hl-yellow} con hora, día, autor, comentarios, etc.
+
+![](./img/commit-reloj.png)
+
+---
+
+## Repo de código
+
+Vamos a realizar un [**cambio en nuestro código**]{.hl-yellow}: en tu código local (local --\> tu ordenador), en lugar de filtrar por Madrid haz el [**filtro por Barcelona**]{.hl-yellow}, guarda el código y sube en el repositorio el nuevo archivo (con el mismo nombre, Github hará la sobrescritura)
+
+```{r}
+#| eval: false
+#| code-line-numbers: "3"
+datos_bcn <-
+  datos_covid |>
+  filter(provincia_iso == "B" & fecha <= "2020-12-31" & sexo != "NC") |> 
+  select(fecha, sexo, grupo_edad, num_casos) |> 
+  summarise(num_casos = sum(num_casos), .by = c(fecha, sexo))
+```
+
+---
+
+## Consulta de commits
+
+![](./img/barcelona_covid.png){width="550"}
+
+::: columns
+::: {.column width="40%"}
+Si ahora [**consultamos el commit**]{.hl-yellow}, al lado hay un número que lo identifica, y clickando en él nos resume los cambios: no solo [**almacena todas las versiones pasadas**]{.hl-yellow} sino que además nos [**muestra las diferencias entre los archivos cambiados**]{.hl-yellow}
+:::
+
+::: {.column width="60%"}
+![](./img/commit_cambio.png)
+:::
+:::
+
+---
+
+## Trazabilidad de cambios
+
+::: columns
+::: {.column width="72%"}
+![](./img/commit_split.png) ![](./img/commit_unified.png)
+:::
+
+::: {.column width="28%"}
+Tenemos [**dos modos de visualización**]{.hl-yellow} de los cambios: el modo split nos muestra el antiguo y el nuevo, con las inclusiones en verde y lo que ya no está en rojo; y el modo unified nos muestra todo en un mismo documento.
+:::
+:::
+
+---
+
+## Recuperación de commits
+
+![](./img/browse-repo.png)
+
+Github nos permite incluso [**recuperar una versión del pasado**]{.hl-yellow} de nuestro repositorio, haciendo click en el tercer icono del commit.
+
+---
+
+## Recuperación de commits
+
+![](./img/branch-commit.png)
+
+Si te fijas ahora al lado de `1 branch` tenemos un [**menú desplegable**]{.hl-yellow} en el que antes ponía `main` y ahora un número identificador del commit. Ya hablaremos de la idea de [**rama (branch)**]{.hl-yellow}
+
+---
+
+## Repo con rmd/qmd
+
+::: columns
+::: {.column width="60%"}
+Vamos a poner en práctica lo aprendido:
+
+1.  Crea un nuevo repositorio en Github (llamado `repo-github-2`) donde habrá alojado con proyecto de R.
+
+2.  Crea un proyecto en `RStudio` que se llame (por ejemplo) `proyecto-qmd`
+
+3.  Una vez dentro del proyecto en `RStudio` haz click en `File < New File < Quarto Document`
+:::
+
+::: {.column width="40%"}
+![](./img/primer-qmd.png)
+:::
+:::
+
+Deberás tener un documento similar a este: un [**quarto markdown (.qmd)**]{.hl-yellow}, un documento que nos permitirá incluir [**markdown + código**]{.hl-yellow} (puede ser `R` o puede ser `Observable`, `D3`, etc).
+
+---
+
+## Repo con rmd/qmd
+
+Este formato es ideal para:
+
+-   [**Trabajar en equipo**]{.hl-yellow} construyendo el borrador de una pieza.
+-   Tomar [**apuntes o informes**]{.hl-yellow} para uno mismo.
+-   [**Presentar**]{.hl-yellow} tu trabajo a tus compañeros.
+
+::: columns
+::: {.column width="50%"}
+![](./img/prueba-qmd-html.png)
+:::
+
+::: {.column width="50%"}
+Si te fijas ahora nuestro repositorio tiene un archivo con formato `.html`...es decir...
+
+[**¡Es una web!**]{.hl-yellow}
+:::
+:::
+
+---
+
+## Github pages
+
+¿Cómo [**convertir nuestro repositorio en una web**]{.hl-yellow}?
+
+![](./img/github-pages.png)
+
+1.  Haz click en `Settings`
+2.  Ve al apartado `Pages`
+3.  En el subapartado `branch` selecciona la única rama que tenemos ahora (`main`)
+4.  Selecciona la carpeta donde tengas el `.html` (en web complejas estará como en cualquier web en `docs`, en algo simple estará en la ruta raiz del repositorio)
+5.  Haz click en `Save`
+
+---
+
+## Github pages
+
+Si te fijas en la [**parte superior del repositorio**]{.hl-yellow} ahora tenemos un icono naranja, que nos indica que la [**web está en proceso de ser desplegada (deploy)**]{.hl-orange}
+
+![](./img/github-naranja.png)
+
+---
+
+## Github pages
+
+Pasados unos segundos (dependiendo del tamaño de la web y tu conexión a internet) ese [**icono pasará a ser un check verde**]{.hl-green}: habemus web
+
+![](./img/github-verde.png)
+
+El [**link de la web por defecto**]{.hl-yellow} será `{nombre_usuario}.github.io/{nombre_repo}`
+
+---
+
+## Github pages
+
+![](./img/github-pages-deploy.png)
+
+¡Un momento! Ahora mismo nuestra web [**no nos está mostrando nuestro .qmd**]{.hl-red}, sino por defecto el [**README.md**]{.hl-yellow}.
+
+. . .
+
+Para que Github entienda que queremos visualizar ese `.html` que hemos generado a partir del `.qmd` vamos en nuestro proyecto local a [**borrar**]{.hl-yellow} todo lo que no sea nuestro archivo `.Rproj` y nuestro archivo `.qmd`, y vamos a [**cambiar el nombre**]{.hl-yellow} a este último llamándolo `index.qmd`, y volvemos a compilarlo para [**generar un index.html**]{.hl-yellow}
+
+---
+
+## Github pages
+
+Vamos a [**subir a Github ese nuevo proyecto**]{.hl-yellow} con el cambio de nombre (llamado `repo-github-3`) para ver luego las diferencias entre uno y otro
+
+![](./img/repo-index-html.png)
+
+---
+
+## Github pages
+
+Si [**repetimos el proceso para hacer una Page**]{.hl-yellow} y esperamos al tick verde...
+
+::: columns
+::: {.column width="50%"}
+![](./img/index-html-qmd.png)
+:::
+
+::: {.column width="50%"}
+Si a tu `.qmd` ya le llamas de inicio `index.qmd`, automáticamente, al detectar Github un `index.html`, interpreta que ese [**archivo index.html**]{.hl-yellow} es el que define la web (y puedes personalizar añadiendo un archivo `css` de estilos)
+
+[**Habemus web**]{.hl-green} simplemente clickando en Pages :)
+:::
+:::
+
+---
+
+## Repo con diapositivas
+
+Vamos a crear el último repositorio que se llamará `repo-diapos`, y crear un proyecto en `RStudio` del mismo nombre (por ejemplo). Una vez creado le daremos a `File < New File < Quarto Presentation`.
+
+::: columns
+::: {.column width="45%"}
+![](img/quarto-slides.png)
+:::
+
+::: {.column width="55%"}
+La forma de escribir será igual que un `.qmd` normal solo que ahora [**cada diapositiva la separaremos**]{.hl-yellow} con un `---` (usando archivos de estilos podemos personalizar lo que queramos)
+
+Llama al archivo directamente `index.qmd`, súbelo a Github y con un click en Pages tienes una [**web con tus diapositivas**]{.hl-yellow}
+:::
+:::
+
+---
+
+## Uso de Gitkraken
+
+La forma más [**sencilla para trabajar de manera colaborativa**]{.hl-yellow} en Github, y tenerlo sincronizado con nuestro local, es hacer uso de [Gitkraken](https://www.gitkraken.com/download)
+
+::: columns
+::: {.column width="50%"}
+![](img/gitkraken-repo.png)
+:::
+
+::: {.column width="50%"}
+Una vez dentro clickamos en el icono de la carpeta (`Repo Management`) y si ya tenemos el repositorio en Github seleccionamos `Clone`, indicando donde queremos clonar (en nuestro local) y que [**repositorio de Github queremos clonar**]{.hl-yellow}.
+:::
+:::
+
+---
+
+## Uso de Gitkraken
+
+::: columns
+::: {.column width="50%"}
+![](img/view-change.png)
+:::
+
+::: {.column width="50%"}
+Una vez clonado, la idea es que cada [**cambio que hagamos en local nos aparecerá en Gitkraken**]{.hl-yellow} como `View changes`.
+:::
+:::
+
+---
+
+## Uso de Gitkraken
+
+Cuando tengas suficientes cambios como para [**actualizar el repositorio**]{.hl-yellow} (tampoco tiene sentido actualizar con cada edición), verás algo similar a esto con todos los [**commits realizados**]{.hl-yellow}
+
+::: columns
+::: {.column width="50%"}
+![](img/stage-all-changes.png)
+:::
+
+::: {.column width="50%"}
+Podrás decidir cuáles de los [**commits locales quieres incluir en remoto**]{.hl-yellow}, bien uno a uno o en `Stage all changes` (para todos)
+:::
+:::
+
+---
+
+## Uso de Gitkraken
+
+Tras incluir los commits deberás incluir un [**título y descripción del commit**]{.hl-yellow}
+
+![](img/titulo-commit.png)
+
+---
+
+## Uso de Gitkraken
+
+Tras hacerlo verás que ahora tenemos [**dos iconos separados en una especie de árbol**]{.hl-yellow} (¿te acuerdas de la `branch` o rama?):
+
+-   [**Ordenador**]{.hl-purple}: la versión del repositorio que tienes en tu [**ordenador**]{.hl-yellow}.
+
+-   [**Logo**]{.hl-purple}: la versión del repositorio que tienes [**subida en remoto**]{.hl-yellow}
+
+![](img/split-gitkraken.png)
+
+---
+
+## Uso de Gitkraken
+
+Mientras eso suceda solo tendrás sincronizado tu ordenador con Gitkraken, pero no con Github. Para ello haremos [**click en Push**]{.hl-yellow} (con `Pull` podrás forzar a tener en local lo mismo que en remoto).
+
+![](img/push-gitkraken.png)
+
+---
+
+## Branchs
+
+Como hemos mencionado ya en varias ocasiones, hay un elefante en la habitación que aún no hemos mentado: las [**ramas o branchs**]{.hl-yellow} de un repositorio.
+
+. . .
+
+Imagina que estáis trabajando varios en un proyecto y teneís una versión que funciona pero que queréis [**modificar en paralelo a partir del estado actual**]{.hl-yellow} del repositorio.
+
+. . .
+
+Las [**ramas**]{.hl-yellow} nos permiten partir de una versión común del repositorio y hacer cambios que [**no afecten a los demás**]{.hl-yellow}
+
+---
+
+## Branchs
+
+Para [**crear una rama**]{.hl-yellow} a partir del estado actual de repositorio haremos click en `Branch` y le pondremos un nombre
+
+![](img/branch-button.png)
+
+Una vez creada verás [**dos iconos**]{.hl-yellow} y un [**menú desplegable**]{.hl-yellow} con las distintas ramas en las que quieres hacer el commit. Imagina que realizas un cambio pero [**no quieres añadirlo a la rama principal**]{.hl-yellow}: puedes hacer el [**commit en tu rama propia en LOCAL**]{.hl-yellow} (lo harás en la rama activa de tu menú de branchs).
+
+---
+
+## Branchs
+
+La primera vez te pedirá que escribas la [**rama en REMOTO**]{.hl-yellow} con la quieres sincronizar tu rama en local. [**Consejo**]{.hl-green}: ponle el mismo nombre en remoto que en local.
+
+![](img/name-branch.png)
+
+---
+
+## Branchs
+
+Fíjate que ahora tenemos el ordenador y el logo en el mismo sitio. Esto no significa que tengas ambas ramas en tu local, solo que [**Gitkraken tiene ambas sincronizadas**]{.hl-yellow}: clickando en cualquiera de ellas, tus archivos en tu ordenador cambiarán.
+
+![](img/both-branchs.png)
+
+---
+
+## Pull request
+
+Lo más recomendable es que [**solo se incorpore de una rama secundaria**]{.hl-yellow} a la rama principal aquello que está [**validado por un/a coordinador/a**]{.hl-yellow} del repositorio, asegurándose que todo funciona correctamente.
+
+Cuando queramos incluirlo haremos [**click con botón derecho**]{.hl-yellow} en el icono de la rama secundaria y seleccionamos `Start a pull request to origin from...`
+
+![](img/pull-request-menu.png)
+
+. . .
+
+Una [**pull request**]{.hl-yellow} será una [**petición al responsable de la rama principal**]{.hl-yellow} para incluir los cambios
+
+---
+
+## Pull request
+
+::: columns
+::: {.column width="60%"}
+![](img/create-pull-request.png)
+:::
+
+::: {.column width="40%"}
+En el cuadro que no se abre deberemos escribir:
+
+-   La [**rama**]{.hl-yellow} a la que hacer el `merge` (normalmente la `main`)
+-   Título y resumen de los cambios
+-   Puedes incluso asignar un [**revisor**]{.hl-yellow} entre los colaboradores del repo.
+-   Puedes asignar [**etiquetas**]{.hl-yellow}
+:::
+:::
+
+---
+
+## Pull request
+
+Mientras no se acepte aparecerá un [**icono de rama**]{.hl-yellow} y un +1 en Pull Requests
+
+![](img/pending-branch.png){width="500"}
+
+. . .
+
+Si somos al mantenedor del repositorio, haciendo click en el menú nos saldrán las ramas que nos quieren hacer hacer `merge`
+
+![](img/menu-pr.png){width="500"}
+
+---
+
+## Pull request
+
+Al hacer click se abrirá un [**cuadro de Pull Request**]{.hl-yellow} para decidir si
+
+-   [**Revisar**]{.hl-yellow} los cambios
+-   [**Aprobar**]{.hl-yellow} el `merge`
+-   [**Añadir comentarios**]{.hl-yellow} al que ha solicitado el `merge` por si queremos solicitar algún cambio [**antes de ser aprobado**]{.hl-yellow}
+
+
+![](img/menu-pr-2.png)
+
+---
+
+## Pull request
+
+Tras revisar todo y aprobarlo clickaremos en `Confirm merge`, y tras ello podremos decidir si esa rama que era paralela a la principal la queremos [**eliminar**]{.hl-yellow} o dejar visible a todos (consejo: dejar visible para tene [**trazabilidad**]{.hl-yellow} del proyecto de trabajo)
+
+::: columns
+::: {.column width="50%"}
+![](img/merge-branch.png)
+:::
+
+::: {.column width="50%"}
+![](img/delete-branch.png)
+:::
+:::
+
