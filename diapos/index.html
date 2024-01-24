@@ -429,12 +429,13 @@ Seminarios BioDS • curso 2023-2024
 <section id="materiales" class="slide level2">
 <h2>Materiales</h2>
 <ul>
-<li><span class="hl-yellow"><strong>Diapositivas</strong></span>: las diapositivas que usaremos disponibles y actualizadas en <strong><a href="https://javieralvarezliebana.es/seminario-R-biods/diapos" class="uri">https://javieralvarezliebana.es/seminario-R-biods/diapos</a></strong></li>
+<li><span class="hl-yellow"><strong>Diapositivas</strong></span>: las diapositivas que usaremos disponibles y actualizadas en <strong><a href="https://javieralvarezliebana.es/cursos-seminario-bioDS/diapos" class="uri">https://javieralvarezliebana.es/cursos-seminario-bioDS/diapos</a></strong></li>
 </ul>
 <p>En el menú de las diapositivas (abajo a la izquierda) tienes una <span class="hl-yellow"><strong>opción para descargarlas en pdf</strong></span> en <code>Tools</code> (consejo: no lo hagas hasta el final del curso ya que irán modificándose)</p>
 <p>&nbsp;</p>
 <ul>
-<li><span class="hl-yellow"><strong>Resúmenes de paquetes</strong></span>: <a href="https://github.com/dadosdelaplace/seminario-R-biods/tree/main/fichas%20paquetes"><strong>chuletas de los paquetes</strong></a> en formato .pdf</li>
+<li><p><span class="hl-yellow"><strong>Código de las diapositivas</strong></span>: <a href="https://github.com/dadosdelaplace/cursos-seminario-bioDS"><strong>repositorio Github</strong></a></p></li>
+<li><p><span class="hl-yellow"><strong>Resúmenes de paquetes</strong></span>: <a href="https://github.com/dadosdelaplace/cursos-seminario-bioDS/tree/main/fichas%20paquetes"><strong>chuletas de los paquetes</strong></a> en formato .pdf</p></li>
 </ul>
 </section>
 <section id="sé-organizado-proyectos" class="slide level2">
@@ -1826,8 +1827,8 @@ Seminarios BioDS • curso 2023-2024
 <pre><code># A tibble: 2 × 14
   name      height  mass hair_color skin_color eye_color birth_year sex   gender
   &lt;chr&gt;      &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; 
-1 Anakin S…    188    84 blond      fair       blue            41.9 male  mascu…
-2 Dud Bolt      94    45 none       blue, grey yellow          NA   male  mascu…
+1 Mace Win…    188    84 none       dark       brown             72 male  mascu…
+2 Cliegg L…    183    NA brown      fair       blue              82 male  mascu…
 # ℹ 5 more variables: homeworld &lt;chr&gt;, species &lt;chr&gt;, films &lt;list&gt;,
 #   vehicles &lt;list&gt;, starships &lt;list&gt;</code></pre>
 </div>
@@ -1857,10 +1858,10 @@ Seminarios BioDS • curso 2023-2024
 <pre><code># A tibble: 4 × 14
   name      height  mass hair_color skin_color eye_color birth_year sex   gender
   &lt;chr&gt;      &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; 
-1 Luminara…    170  56.2 black      yellow     blue              58 fema… femin…
-2 R4-P17        96  NA   none       silver, r… red, blue         NA none  femin…
-3 San Hill     191  NA   none       grey       gold              NA male  mascu…
-4 Nute Gun…    191  90   none       mottled g… red               NA male  mascu…
+1 R5-D4         97    32 &lt;NA&gt;       white, red red               NA none  mascu…
+2 Watto        137    NA black      blue, grey yellow            NA male  mascu…
+3 Jabba De…    175  1358 &lt;NA&gt;       green-tan… orange           600 herm… mascu…
+4 R5-D4         97    32 &lt;NA&gt;       white, red red               NA none  mascu…
 # ℹ 5 more variables: homeworld &lt;chr&gt;, species &lt;chr&gt;, films &lt;list&gt;,
 #   vehicles &lt;list&gt;, starships &lt;list&gt;</code></pre>
 </div>
@@ -1889,8 +1890,8 @@ Seminarios BioDS • curso 2023-2024
 <pre><code># A tibble: 2 × 14
   name      height  mass hair_color skin_color eye_color birth_year sex   gender
   &lt;chr&gt;      &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; 
-1 Luke Sky…    172    77 blond      fair       blue              19 male  mascu…
-2 C-3PO        167    75 &lt;NA&gt;       gold       yellow           112 none  mascu…
+1 C-3PO        167    75 &lt;NA&gt;       gold       yellow           112 none  mascu…
+2 Luke Sky…    172    77 blond      fair       blue              19 male  mascu…
 # ℹ 5 more variables: homeworld &lt;chr&gt;, species &lt;chr&gt;, films &lt;list&gt;,
 #   vehicles &lt;list&gt;, starships &lt;list&gt;</code></pre>
 </div>
@@ -1924,7 +1925,7 @@ Seminarios BioDS • curso 2023-2024
 <div class="cell">
 <div class="sourceCode cell-code" id="cb134"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb134-1"><a href="#cb134-1"></a><span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, <span class="at">size =</span> <span class="dv">10</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 5 3 5 6 1 1 6 2 4 4</code></pre>
+<pre><code> [1] 1 2 3 6 4 2 2 5 6 2</code></pre>
 </div>
 </div>
 </div>
@@ -3030,9 +3031,9 @@ Seminarios BioDS • curso 2023-2024
                                                                                                                                                       expr
                          mutate(tb, peso = rnorm(n = 20, mean = if_else(sexo == "chico",      3.266, 3.155), sd = if_else(sexo == "chico", 0.514, 0.495)))
  for (i in 1:20) {     tb[i, 3] = ifelse(tb$sexo[i] == "chico", rnorm(n = 1, mean = 3.266,          sd = 0.514), rnorm(n = 1, mean = 3.155, sd = 0.495)) }
-    min     lq      mean  median      uq     max neval cld
-  585.5  655.0  897.1669  705.55  823.55 53324.3  1000  a 
- 2356.6 2534.1 3022.4698 2624.65 2972.70 11768.0  1000   b</code></pre>
+    min      lq      mean  median      uq     max neval cld
+  594.9  648.75  849.7468  701.70  816.15 59327.7  1000  a 
+ 2373.6 2522.30 2870.1816 2594.45 2867.25  8377.3  1000   b</code></pre>
 </div>
 </div>
 </div>
@@ -4541,10 +4542,10 @@ $x2
 <span id="cb345-3"><a href="#cb345-3"></a><span class="fu">map</span>(x, mean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
-[1] -0.003197748
+[1] -0.04136339
 
 [[2]]
-[1] 2.050254</code></pre>
+[1] 2.03415</code></pre>
 </div>
 </div>
 </div>
@@ -4559,10 +4560,10 @@ $x2
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
-[1] 0.4813664
+[1] 0.4759231
 
 [[2]]
-[1] 6.484563</code></pre>
+[1] 6.409026</code></pre>
 </div>
 </div>
 </section>
@@ -4578,11 +4579,11 @@ $x2
 <div class="cell">
 <div class="sourceCode cell-code" id="cb349"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb349-1"><a href="#cb349-1"></a><span class="fu">map_dbl</span>(x, mean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] -0.003197748  2.050254230</code></pre>
+<pre><code>[1] -0.04136339  2.03414977</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb351"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb351-1"><a href="#cb351-1"></a><span class="fu">map_chr</span>(x, <span class="cf">function</span>(x) { glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Mean is {round(mean(x), 5)}"</span>) })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "Mean is -0.0032" "Mean is 2.05025"</code></pre>
+<pre><code>[1] "Mean is -0.04136" "Mean is 2.03415" </code></pre>
 </div>
 </div>
 </section>
@@ -4591,14 +4592,14 @@ $x2
 <div class="cell">
 <div class="sourceCode cell-code" id="cb353"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb353-1"><a href="#cb353-1"></a><span class="fu">c</span>(x[[<span class="dv">1</span>]][<span class="dv">3</span>], x[[<span class="dv">2</span>]][<span class="dv">3</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] -0.0161668  3.2985191</code></pre>
+<pre><code>[1] -0.8233694 -0.9365637</code></pre>
 </div>
 </div>
 <p>Además si incluyes <span class="hl-yellow"><strong>como argumento un número</strong></span> en lugar de una función, nos devolverá el <span class="hl-yellow"><strong>i-ésimo elemento de la lista</strong></span>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb355"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb355-1"><a href="#cb355-1"></a><span class="fu">map_dbl</span>(x, <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] -0.0161668  3.2985191</code></pre>
+<pre><code>[1] -0.8233694 -0.9365637</code></pre>
 </div>
 </div>
 </section>

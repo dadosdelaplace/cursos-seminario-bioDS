@@ -54,14 +54,15 @@ execute:
 
 ## Materiales
 
-* [**Diapositivas**]{.hl-yellow}: las diapositivas que usaremos disponibles y actualizadas en **<https://javieralvarezliebana.es/seminario-R-biods/diapos>** 
+* [**Diapositivas**]{.hl-yellow}: las diapositivas que usaremos disponibles y actualizadas en **<https://javieralvarezliebana.es/cursos-seminario-bioDS/diapos>** 
 
 En el menú de las diapositivas (abajo a la izquierda) tienes una [**opción para descargarlas en pdf**]{.hl-yellow} en `Tools` (consejo: no lo hagas hasta el final del curso ya que irán modificándose)
   
 &nbsp;
 
+* [**Código de las diapositivas**]{.hl-yellow}: [**repositorio Github**](https://github.com/dadosdelaplace/cursos-seminario-bioDS) 
 
-* [**Resúmenes de paquetes**]{.hl-yellow}: [**chuletas de los paquetes**](https://github.com/dadosdelaplace/seminario-R-biods/tree/main/fichas%20paquetes) en formato .pdf
+* [**Resúmenes de paquetes**]{.hl-yellow}: [**chuletas de los paquetes**](https://github.com/dadosdelaplace/cursos-seminario-bioDS/tree/main/fichas%20paquetes) en formato .pdf
 
 
 ---
